@@ -11,7 +11,7 @@ export default function CategoryTabs() {
   return (
     <>
       {categories.map((cat) => (
-        <div className="w-[6rem] h-[6rem] flex flex-col" key={cat.id}>
+        <div className="w-[6rem] h-[6rem] flex flex-col " key={cat.id}>
           <div className="w-[6rem] h-[80%] bg-white relative">
             <Image
               src={"/placeholder.jpg"}

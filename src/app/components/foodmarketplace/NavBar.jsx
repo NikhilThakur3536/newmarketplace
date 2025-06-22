@@ -101,7 +101,7 @@ export default function FoodNavBar() {
                   : "0px 0px 0px rgba(0,0,0,0)",
               }}
               transition={{ ease: "easeInOut" }}
-              className={`w-fit h-fit flex items-center justify-center p-2 rounded-full ${
+              className={`w-fit h-fit flex items-center justify-center p-2 rounded-full  ${
                 isActive ? "bg-lightpink" : "bg-transparent"
               }`}
             >
