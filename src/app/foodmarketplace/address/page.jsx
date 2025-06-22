@@ -29,9 +29,9 @@ export default function Address() {
     <div className="w-screen min-h-screen flex justify-center overflow-y-auto">
       <div className="max-w-md w-full flex flex-col gap-4 relative bg-white ">
         {/* Header */}
-        <div className="w-full px-4 flex gap-4 py-3 border-b border-r border-l border-gray-300 items-center">
-          <ChevronLeft size={20} strokeWidth={3} className="text-lightpink" />
-          <span className="text-lightpink font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
+        <div className="w-full px-4 flex gap-4 py-3 bg-lightpink items-center">
+          <ChevronLeft size={20} strokeWidth={3} className="text-white" />
+          <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
             Choose Delivery Address
           </span>
         </div>
@@ -127,7 +127,7 @@ export default function Address() {
       {/* Confirm Button */}
       <div className="fixed bottom-2 w-[90%] max-w-md flex justify-center z-50">
         <div className="w-fit h-fit px-6 flex justify-center">
-          <button className="w-fit h-fit px-4 py-2 bg-green rounded-xl text-white font-bold shadow-md">
+          <button className="w-fit h-fit px-12 py-2 bg-green rounded-xl text-white font-bold shadow-md">
             Confirm
           </button>
         </div>

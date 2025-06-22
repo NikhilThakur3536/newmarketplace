@@ -108,7 +108,7 @@ export default function AddressCard() {
             }`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.01 }}
           >
             <div className="flex justify-between items-center mb-2">
               <div className="flex gap-2 items-center">
