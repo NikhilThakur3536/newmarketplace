@@ -29,7 +29,7 @@ export default function AddressCard() {
   if (loading) return <p className="text-black text-center">Loading...</p>;
 
   return (
-    <div className="w-full flex flex-col items-center gap-4 px-4 overflow-hidden">
+    <div className="w-full flex flex-col items-center gap-4 px-4 overflow-hidden mt-2">
       {addresses.map((address) =>
         editingId === address.id ? (
           <form
@@ -103,7 +103,7 @@ export default function AddressCard() {
             onClick={() => handleSelect(address.id)}
             className={`w-full cursor-pointer bg-white border rounded-xl shadow-sm p-4 transition-all duration-300 ${
               selectedId === address.id
-                ? "border-green-500 ring-2 ring-green-300"
+                ? "border-green-500 "
                 : "border-gray-200"
             }`}
             initial={{ opacity: 0, y: 10 }}

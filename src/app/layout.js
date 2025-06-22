@@ -1,6 +1,7 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { OrderProvider } from "./context/OrderContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -17,7 +18,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+      <OrderProvider marketplace={"foodmarketplace"}>
         {children}
+       </OrderProvider> 
       </body>
     </html>
   );

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useCustomerAddresses } from "@/app/context/CustomerAddressContext";
 
 export default function Address() {
-  const { addOrEditAddress } = useCustomerAddresses(); // ✅ use from context
+  const { addOrEditAddress } = useCustomerAddresses(); 
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({});
 
@@ -17,7 +17,7 @@ export default function Address() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addOrEditAddress(formData, false); // 🔥 Call context function
+      await addOrEditAddress(formData, false); 
       setShowAddForm(false);
       setFormData({});
     } catch (err) {
@@ -26,7 +26,7 @@ export default function Address() {
   };
 
   return (
-    <div className="w-screen min-h-screen flex justify-center ">
+    <div className="w-screen min-h-screen flex justify-center overflow-y-auto">
       <div className="max-w-md w-full flex flex-col gap-4 relative bg-white ">
         {/* Header */}
         <div className="w-full px-4 flex gap-4 py-3 border-b border-r border-l border-gray-300 items-center">
@@ -119,7 +119,7 @@ export default function Address() {
         </div>
 
         {/* Address Cards */}
-        <div className="w-full px-4 flex flex-col gap-2 items-center">
+        <div className="w-full px-4 flex flex-col gap-2 items-center ">
           <AddressCard />
         </div>
       </div>
