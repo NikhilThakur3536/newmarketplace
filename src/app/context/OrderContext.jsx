@@ -11,13 +11,14 @@ export const OrderProvider = ({ children, marketplace }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const BASE_URL= process.env.NEXT_PUBLIC_BASE_URL
 
   const languageId = "2bfa9d89-61c4-401e-aae3-346627460558";
 
   const getApiDetails = (token) => {
     if (marketplace === "electronics") {
       return {
-        url: "/api/user/order/listv2",
+        url: `${BASE_URL}/user/order/listv2`,
         payload: { languageId },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -25,7 +26,7 @@ export const OrderProvider = ({ children, marketplace }) => {
       };
     } else if (marketplace === "foodmarketplace") {
       return {
-        url: "/user/order/list",
+        url: `${BASE_URL}/user/order/list`,
         payload: {
           languageId,
           tokenNumber: token, 

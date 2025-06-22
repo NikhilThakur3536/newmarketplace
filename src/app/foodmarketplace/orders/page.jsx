@@ -1,7 +1,7 @@
 "use client"
 
 import OrderCard from "@/app/components/foodmarketplace/OrderCard"
-import { ChevronLeft, ChevronRight, EllipsisVertical, Search } from "lucide-react"
+import { ChevronLeft, Search } from "lucide-react"
 import Image from "next/image"
 
 export default function Orders(){
