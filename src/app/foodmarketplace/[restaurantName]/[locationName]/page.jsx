@@ -12,6 +12,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import FoodItemCard from "@/app/components/foodmarketplace/FoodItemCard";
+import { useRouter } from "next/navigation";
 
 const MenuContext = createContext();
 
@@ -39,8 +40,8 @@ export default function RestaurantPage() {
   const { restaurantName, locationName } = useParams();
   const [categoriesData, setCategoriesData] = useState({});
   const [expandedCategories, setExpandedCategories] = useState({});
-
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
@@ -87,14 +88,22 @@ export default function RestaurantPage() {
 
         const storeId = matchedStore.id;
 
+        // Build payload conditionally
+        const payload = {
+          limit: 4000,
+          offset: 0,
+          storeId,
+          languageId: "2bfa9d89-61c4-401e-aae3-346627460558",
+        };
+
+        // Only include searchKey if searchQuery is not empty
+        if (searchQuery.trim() !== "") {
+          payload.searchKey = searchQuery;
+        }
+
         const res = await axios.post(
           `${BASE_URL}/user/product/listv1`,
-          {
-            limit: 4000,
-            offset: 0,
-            storeId,
-            languageId: "2bfa9d89-61c4-401e-aae3-346627460558",
-          },
+          payload,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -105,6 +114,12 @@ export default function RestaurantPage() {
         if (res.data.success) {
           const structured = formatCategories(res.data.data.rows);
           setCategoriesData(structured);
+          // Initialize all categories as expanded
+          const initialExpanded = Object.keys(structured).reduce((acc, cat) => {
+            acc[cat] = true;
+            return acc;
+          }, {});
+          setExpandedCategories(initialExpanded);
         } else {
           console.warn("Failed to fetch products");
         }
@@ -114,7 +129,7 @@ export default function RestaurantPage() {
     }
 
     if (restaurantName && locationName) fetchMenu();
-  }, [restaurantName, locationName]);
+  }, [restaurantName, locationName, searchQuery]);
 
   function toggleCategory(cat) {
     setExpandedCategories((prev) => ({
@@ -129,7 +144,7 @@ export default function RestaurantPage() {
         <div className="max-w-md w-full flex flex-col relative bg-white min-h-screen overflow-x-hidden">
           {/* Header */}
           <div className="fixed w-full max-w-md px-4 flex gap-4 py-3 bg-lightpink items-center z-30">
-            <ChevronLeft size={20} strokeWidth={3} className="text-white" />
+            <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.push("/foodmarketplace")} />
             <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
               {unslugify(restaurantName)}
             </span>
@@ -170,18 +185,17 @@ export default function RestaurantPage() {
           <hr className="border-0 bg-gray-200 h-0.5 w-full" />
 
           {/* Menu */}
-          <div className="p-4 flex flex-col w-full max-w-md overflow-x-hidden mb-12 gap-4 ">
+          <div className="p-4 flex flex-col w-full max-w-md overflow-x-hidden mb-12 gap-4">
             {Object.entries(categoriesData).map(([cat, items]) => (
-              <div key={cat} className=" rounded-lg overflow-hidden dropshadow-md">
+              <div key={cat} className="rounded-lg overflow-hidden dropshadow-md">
                 <button
                   onClick={() => toggleCategory(cat)}
-                  className="w-full max-w-md px-4 py-2 bg-gray-100 text-left font-medium text-lg flex justify-between items-center "
+                  className="w-full max-w-md px-4 py-2 bg-gray-100 text-left font-medium text-lg flex justify-between items-center"
                 >
                   {cat}
-                  <ChevronDown color="black" size={20}/>
+                  <ChevronDown color="black" size={20} />
                 </button>
-                <hr  className="h-2 border-0 bg-gray-400"/>
-
+                <hr className="h-2 border-0 bg-gray-400" />
                 {expandedCategories[cat] && (
                   <div className="p-2 flex flex-col gap-2">
                     {items.map((item) => (
@@ -192,12 +206,17 @@ export default function RestaurantPage() {
               </div>
             ))}
           </div>
-          <div className="fixed bottom-0 w-full max-w-md flex gap-2 bg-white p-2 items-center shadow-[0_-4px_8px_-4px_rgba(0,0,0,0.2)] ">
-            <input type="text" placeholder="Search" className="rounded-lg border border-lightpink w-full pl-8 p-2 bg-blue-50"/>
+          <div className="fixed bottom-0 w-full max-w-md flex gap-2 bg-white p-2 items-center shadow-[0_-4px_8px_-4px_rgba(0,0,0,0.2)]">
+            <input
+              type="text"
+              placeholder="Search"
+              className="rounded-lg border border-lightpink w-full pl-8 p-2 bg-blue-50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             <Search className="text-lightpink absolute ml-2" size={20} />
-            </div>
-
           </div>
+        </div>
       </div>
     </MenuContext.Provider>
   );

@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { OrderProvider } from "./context/OrderContext";
 import { CartProvider } from "./context/CartContext";
+import { Toaster } from "react-hot-toast";
+import { FavoriteProvider,} from "./context/FavouriteContext";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,11 +23,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-      <OrderProvider marketplace={"foodmarketplace"}>
-        <CartProvider marketplace={"foodmarketplace"}> 
-          {children}
-        </CartProvider>
-       </OrderProvider> 
+          <FavoriteProvider>
+            {children}
+          </FavoriteProvider>
+          <Toaster position="bottom-center"/>
       </body>
     </html>
   );

@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { useLocation } from "../../context/LocationContext";
 import RestaurantCard from "./RestaurantCard";
 
-export default function StoreList() {
+export default function StoreList({ searchQuery }) {
   const { selectedLocation } = useLocation();
   const [stores, setStores] = useState([]);
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -25,25 +25,32 @@ export default function StoreList() {
   };
 
   useEffect(() => {
-    const token=localStorage.getItem("token")
+    const token = localStorage.getItem("token");
     async function fetchStores() {
       if (!selectedLocation?.id) return;
 
       try {
+        // Build payload conditionally
+        const payload = {
+          limit: 4,
+          offset: 0,
+          locationId: selectedLocation.id,
+        };
+
+        // Only include searchKey if searchQuery is not empty
+        if (searchQuery.trim() !== "") {
+          payload.searchKey = searchQuery;
+        }
+
         const response = await axios.post(
           `${BASE_URL}/user/store/list`,
+          payload,
           {
-            limit: 4,
-            offset: 0,
-            locationId: selectedLocation.id,
-          },
-          {
-            headers:{
-                Authorization: `Bearer ${token}`,
-            }
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
-        console.log(response.data.data.rows)
         if (response.data.success) {
           setStores(response.data.data.rows);
         }
@@ -53,7 +60,7 @@ export default function StoreList() {
     }
 
     fetchStores();
-  }, [selectedLocation, BASE_URL]);
+  }, [selectedLocation, BASE_URL, searchQuery]);
 
   return (
     <div className="w-full flex flex-col gap-4 px-4">

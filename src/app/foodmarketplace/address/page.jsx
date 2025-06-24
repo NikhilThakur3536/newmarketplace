@@ -4,11 +4,14 @@ import AddressCard from "@/app/components/foodmarketplace/AdressCard";
 import { ChevronLeft, Plus } from "lucide-react";
 import { useState } from "react";
 import { useCustomerAddresses } from "@/app/context/CustomerAddressContext";
+import { useCart } from "@/app/context/CartContext";
 
 export default function Address() {
   const { addOrEditAddress } = useCustomerAddresses(); 
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({});
+  const { orderAdd } = useCart();
+  const [selectedAddressId, setSelectedAddressId] = useState("");
 
   const handleFormChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
