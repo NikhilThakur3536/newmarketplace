@@ -32,7 +32,7 @@ export default function CartPage() {
         ) : (
           <>
             <div className="space-y-4 mb-6">
-              {cartItems.map((item) => (
+              {/* {cartItems.map((item) => ( */}
                 <div key={item.id} className="bg-white rounded-2xl p-4 flex gap-4">
                   <img
                     src={item.image || "/placeholder.svg"}
@@ -61,7 +61,7 @@ export default function CartPage() {
                   <div className="text-right">
                   </div>
                 </div>
-              ))}
+              {/* ))} */}
             </div>
 
             {/* Total */}
