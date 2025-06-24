@@ -10,7 +10,7 @@ export const ProductProvider = ({ children }) => {
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null); // user selection
+  const [selectedCategories, setSelectedCategories] = useState([]); // Changed to array
   const [searchKey, setSearchKey] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(12);
@@ -25,7 +25,11 @@ export const ProductProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     return {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {}),
     };
   };
 
@@ -48,7 +52,7 @@ export const ProductProvider = ({ children }) => {
   };
 
   const fetchProducts = async (
-    categoryId = selectedCategory,
+    categoryIds = selectedCategories,
     search = searchKey,
     currentPage = page
   ) => {
@@ -62,12 +66,10 @@ export const ProductProvider = ({ children }) => {
         languageId,
       };
 
-      // ✅ Add categoryId only if user selected a specific one
-      if (categoryId) {
-        body.categoryId = categoryId;
+      if (categoryIds && categoryIds.length > 0) {
+        body.categoryIds = categoryIds;
       }
 
-      // ✅ Add searchKey only if non-empty
       if (search && search.trim() !== "") {
         body.searchKey = search.trim();
       }
@@ -84,7 +86,7 @@ export const ProductProvider = ({ children }) => {
           data.data.rows.map((product) => ({
             id: product.id,
             name: product.productLanguages[0]?.name || "Unnamed Product",
-            price: product.varients[0]?.inventory?.price || 0,
+            price: product.varients?.[0]?.inventory?.price || 0,
             image: product.productImages[0]?.url || "/placeholder.svg",
             categoryId: product.categoryId,
           }))
@@ -100,24 +102,22 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  // ✅ First Load – no filters applied
   useEffect(() => {
     fetchCategories();
-    fetchProducts(null, ""); // no category, no search
+    fetchProducts([], ""); 
   }, []);
 
-  // ✅ Re-fetch when page or searchKey changes
   useEffect(() => {
-    fetchProducts(selectedCategory, searchKey, page);
-  }, [page, searchKey]);
+    fetchProducts(selectedCategories, searchKey, page);
+  }, [page, searchKey, selectedCategories]);
 
   return (
     <ProductContext.Provider
       value={{
         products,
         categories,
-        selectedCategory,
-        setSelectedCategory,
+        selectedCategories,
+        setSelectedCategories,
         searchKey,
         setSearchKey,
         fetchProducts,
