@@ -230,7 +230,7 @@ export default function ProductDetailPage() {
       let prod = null;
       try {
         const response = await axios.post(url, body, { headers });
-        console.log(" API Response:", response.data);
+        // console.log(" API Response:", response.data);
 
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           prod = response.data.data.rows.find((p) => p.id === id);
@@ -260,7 +260,7 @@ export default function ProductDetailPage() {
               specifications: Array.isArray(prod.specifications) ? prod.specifications : [],
               longDescription: prod.productLanguages?.[0]?.longDescription || "No description available",
             });
-            console.log(" Matched Product:", prod);
+            // console.log(" Matched Product:", prod);
           } else {
             setError("Product not found in response");
             console.warn(" Product with ID not found in response:", id);
@@ -272,11 +272,11 @@ export default function ProductDetailPage() {
       } catch (err) {
         const errorMessage = err.message || "Unknown error occurred";
         setError(`Failed to fetch product: ${errorMessage}`);
-        console.error("🔥 Axios Error:", err.response?.data || err.message, err);
+        console.error(" Axios Error:", err.response?.data || err.message, err);
         if (prod) {
-          console.error("🔥 Product data at error:", prod);
+          console.error(" Product data at error:", prod);
         } else {
-          console.error("🔥 No product data available (prod is undefined)");
+          console.error(" No product data available (prod is undefined)");
         }
       } finally {
         setLoading(false);
@@ -310,7 +310,7 @@ export default function ProductDetailPage() {
 
       try {
         const response = await axios.post(url, body, { headers });
-        console.log(" Similar Products API Response:", response.data);
+        // console.log(" Similar Products API Response:", response.data);
 
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           const products = response.data.data.rows
@@ -335,7 +335,7 @@ export default function ProductDetailPage() {
             })
             .filter((p) => p.id); // Ensure valid products
           setSimilarProducts(products);
-          console.log(" Similar Products Set:", products);
+          // console.log(" Similar Products Set:", products);
         } else {
           console.warn("⚠️ No similar products found in response.");
           setSimilarProducts([]);
@@ -379,7 +379,7 @@ export default function ProductDetailPage() {
   };
 
   const addToCart = (product, qty) => {
-    console.log(`Added ${qty} of ${product.name} to cart`);
+    // console.log(`Added ${qty} of ${product.name} to cart`);
     alert(`Added ${qty} of ${product.name} to cart`);
   };
 

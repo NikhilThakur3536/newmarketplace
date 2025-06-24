@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation"
 import { ChevronLeft, ShoppingCart, Minus, Plus } from "lucide-react"
 
 export default function CartPage() {
-  const { cartItems, updateCartQuantity } = useCart()
   const router = useRouter()
 
   return (
@@ -70,7 +69,6 @@ export default function CartPage() {
               <div className="flex justify-between items-center mb-4">
                 <span className="text-lg font-semibold">Total</span>
                 <span className="text-xl font-bold">
-                  {formatPrice(cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0))}
                 </span>
               </div>
               <button className="w-full py-4 bg-blue-500 text-white rounded-2xl font-semibold">
