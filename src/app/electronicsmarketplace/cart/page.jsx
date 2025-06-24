@@ -2,8 +2,6 @@
 
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ShoppingCart, Minus, Plus } from "lucide-react"
-import { useCart } from "@/context/CartContext"
-import { formatPrice } from "@/utils/formatPrice"
 
 export default function CartPage() {
   const { cartItems, updateCartQuantity } = useCart()
@@ -62,7 +60,6 @@ export default function CartPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">{formatPrice(item.price * item.quantity)}</p>
                   </div>
                 </div>
               ))}

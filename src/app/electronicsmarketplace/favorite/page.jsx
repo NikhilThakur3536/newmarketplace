@@ -2,12 +2,8 @@
 
 import { useRouter } from "next/navigation"
 import { ChevronLeft, Heart } from "lucide-react"
-import { products } from "@/constants/products"
-import { useCart } from "@/context/CartContext"
-import { formatPrice } from "@/utils/formatPrice"
 
 export default function FavoritesPage() {
-  const { favorites, toggleFavorite } = useCart()
   const router = useRouter()
 
   return (
