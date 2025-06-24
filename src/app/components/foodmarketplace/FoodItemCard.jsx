@@ -4,9 +4,13 @@ import { Plus, Minus, Heart } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "@/app/context/CartContext"; // ✅ adjust path as needed
+import { useCart } from "@/app/context/CartContext"; 
+import toast from "react-hot-toast";
+import { useFavorite } from "@/app/context/FavouriteContext";
 
 export default function FoodItemCard({ item }) {
+  const { toggleFavorite, favoriteItems } = useFavorite();
+  const isFavorite = favoriteItems.some((fav) => fav.id === item.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedAddons, setSelectedAddons] = useState([]);
@@ -39,6 +43,23 @@ export default function FoodItemCard({ item }) {
     }
   };
 
+  const handleFavoriteClick = () => {
+  toggleFavorite({
+    productId: item.id,
+    productVarientUomId: item.varients?.[0]?.productVarientUoms?.[0]?.id,
+    name,
+    isFavorite,
+  });
+
+  toast.custom(
+    <div className={`px-4 py-2 rounded-lg shadow-md font-semibold text-white ${
+      isFavorite ? "bg-red-600" : "bg-green-600"
+    }`}>
+      {isFavorite ? `${name} removed from favorites` : `${name} added to favorites`}
+    </div>
+  );
+};
+
   const name = item?.productLanguages?.[0]?.name || "Item";
   const price = Number(item?.varients?.[0]?.productVarientUoms?.[0]?.inventory?.price || 0);
   const description = item?.productLanguages?.[0]?.longDescription || "";
@@ -61,9 +82,19 @@ export default function FoodItemCard({ item }) {
           quantity: 1,
         })),
       };
-      await addToCart(payload);
+      await addToCart(payload); 
+      toast.custom(
+        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          {name} added to cart successfully 
+        </div>
+      );
       handleClose();
     } catch (error) {
+      toast.custom(
+        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          Failed to add {name} to cart 
+        </div>
+      );
       console.error("Failed to add item to cart:", error);
     }
   };
@@ -88,8 +119,8 @@ export default function FoodItemCard({ item }) {
           >
             ADD
           </div>
-          <div className="w-fit h-fit p-1 bg-gray-100/40 flex items-center justify-center absolute top-2 right-2 rounded-full">
-            <Heart color="white" size={20} />
+          <div className="w-fit h-fit p-1 bg-gray-100/40 flex items-center justify-center absolute top-2 right-2 rounded-full" onClick={(e) => {e.stopPropagation();handleFavoriteClick();}}>
+            <Heart fill={isFavorite ? "red" : "white"} color="white" size={20} />
           </div>
         </div>
       </div>
@@ -99,7 +130,7 @@ export default function FoodItemCard({ item }) {
         {isModalOpen && (
           <>
             <motion.div
-              className="fixed inset-0 z-[68] bg-black/40"
+              className="fixed z-[68] bg-black/40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
