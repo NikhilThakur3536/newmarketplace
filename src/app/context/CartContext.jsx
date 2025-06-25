@@ -96,10 +96,12 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchCartItems();
+      toast.dismiss("remove-toast")
       toast.custom(
         <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           Item removed from cart successfully
-        </div>
+        </div>,
+        {id:"remove-toast",duration:500}
       );
     } catch (err) {
       console.error("Error removing item from cart:", err);

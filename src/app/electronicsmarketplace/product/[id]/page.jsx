@@ -7,6 +7,8 @@ import axios from "axios";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useChat } from "@/app/context/ChatContext";
+import { useCart } from "@/app/context/CartContext";
+import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const languageId = "2bfa9d89-61c4-401e-aae3-346627460558";
@@ -140,7 +142,9 @@ const ChatInterface = ({ onClose, participantId }) => {
           )}
           {isTyping && (
             <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="bg-white/90 text-gray-800 border border-gray-200/50 rounded-2xl rounded-bl-md px-5 py-3 shadow-md backdrop-blur-sm relative">
+              <
+
+div className="bg-white/90 text-gray-800 border border-gray-200/50 rounded-2xl rounded-bl-md px-5 py-3 shadow-md backdrop-blur-sm relative">
                 <div className="flex gap-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
@@ -206,6 +210,7 @@ export default function ProductDetailPage() {
   const [favorites, setFavorites] = useState([]);
   const [showChat, setShowChat] = useState(false);
   const { initiateChat, clearChat } = useChat();
+  const { addToCart, cartCount } = useCart();
 
   useEffect(() => {
     const fetchProductById = async () => {
@@ -230,20 +235,17 @@ export default function ProductDetailPage() {
       let prod = null;
       try {
         const response = await axios.post(url, body, { headers });
-        // console.log(" API Response:", response.data);
-
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           prod = response.data.data.rows.find((p) => p.id === id);
           if (prod) {
-            // Log warnings for missing arrays but proceed with fallbacks
             if (!Array.isArray(prod.productLanguages) || prod.productLanguages.length === 0) {
-              console.warn(" Product has no valid productLanguages:", prod);
+              console.warn("Product has no valid productLanguages:", prod);
             }
             if (!Array.isArray(prod.variants) || prod.variants.length === 0) {
-              console.warn(" Product has no valid variants:", prod);
+              console.warn("Product has no valid variants:", prod);
             }
             if (!Array.isArray(prod.productImages) || prod.productImages.length === 0) {
-              console.warn(" Product has no valid productImages:", prod);
+              console.warn("Product has no valid productImages:", prod);
             }
 
             setProduct({
@@ -259,24 +261,24 @@ export default function ProductDetailPage() {
               reviews: prod.reviews || 10,
               specifications: Array.isArray(prod.specifications) ? prod.specifications : [],
               longDescription: prod.productLanguages?.[0]?.longDescription || "No description available",
+              varientId: prod.varients?.[0]?.id
             });
-            // console.log(" Matched Product:", prod);
           } else {
             setError("Product not found in response");
-            console.warn(" Product with ID not found in response:", id);
+            console.warn("Product with ID not found in response:", id);
           }
         } else {
           setError("No products found in response");
-          console.warn(" No products found in response:", response.data);
+          console.warn("No products found in response:", response.data);
         }
       } catch (err) {
         const errorMessage = err.message || "Unknown error occurred";
         setError(`Failed to fetch product: ${errorMessage}`);
-        console.error(" Axios Error:", err.response?.data || err.message, err);
+        console.error("Axios Error:", err.response?.data || err.message, err);
         if (prod) {
-          console.error(" Product data at error:", prod);
+          console.error("Product data at error:", prod);
         } else {
-          console.error(" No product data available (prod is undefined)");
+          console.error("No product data available (prod is undefined)");
         }
       } finally {
         setLoading(false);
@@ -310,20 +312,18 @@ export default function ProductDetailPage() {
 
       try {
         const response = await axios.post(url, body, { headers });
-        // console.log(" Similar Products API Response:", response.data);
-
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           const products = response.data.data.rows
             .filter((p) => String(p.id) !== String(id))
             .map((p) => {
               if (!Array.isArray(p.productLanguages) || p.productLanguages.length === 0) {
-                console.warn(" Similar product has no valid productLanguages:", p);
+                console.warn("Similar product has no valid productLanguages:", p);
               }
               if (!Array.isArray(p.variants) || p.variants.length === 0) {
-                console.warn(" Similar product has no valid variants:", p);
+                console.warn("Similar product has no valid variants:", p);
               }
               if (!Array.isArray(p.productImages) || p.productImages.length === 0) {
-                console.warn(" Similar product has no valid productImages:", p);
+                console.warn("Similar product has no valid productImages:", p);
               }
 
               return {
@@ -331,11 +331,11 @@ export default function ProductDetailPage() {
                 name: p.productLanguages?.[0]?.name || "Unnamed Product",
                 price: p.varients?.[0]?.inventory?.price || 0,
                 image: p.productImages?.[0]?.url || "/placeholder.jpg",
+                varientId:p.varients?.[0]?.id
               };
             })
-            .filter((p) => p.id); // Ensure valid products
+            .filter((p) => p.id);
           setSimilarProducts(products);
-          // console.log(" Similar Products Set:", products);
         } else {
           console.warn("⚠️ No similar products found in response.");
           setSimilarProducts([]);
@@ -378,9 +378,29 @@ export default function ProductDetailPage() {
     );
   };
 
-  const addToCart = (product, qty) => {
-    // console.log(`Added ${qty} of ${product.name} to cart`);
-    alert(`Added ${qty} of ${product.name} to cart`);
+  const addToCartHandler = async (product, qty,varientId) => {
+    try {
+      const payload = {
+        productId: product.id,
+        quantity: qty,
+        varientId:varientId
+      };
+      await addToCart(payload);
+      toast.custom(
+        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          {`Added ${qty} of ${product.name} to cart successfully`}
+        </div>,
+        { duration: 2000 }
+      );
+      setQuantity(1);
+    } catch (err) {
+      toast.custom(
+        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          Failed to add item to cart
+        </div>,
+        { duration: 2000 }
+      );
+    }
   };
 
   const formatPrice = (price) => `$${parseFloat(price).toFixed(2)}`;
@@ -400,9 +420,14 @@ export default function ProductDetailPage() {
           <ChevronLeft className="w-6 h-6 text-gray-700" />
         </button>
         <h1 className="font-semibold text-lg">Product Details</h1>
-        <button onClick={() => router.push("/cart")}>
+        <button onClick={() => router.push("/electronicsmarketplace/cart")}>
           <div className="relative">
             <ShoppingCart className="w-6 h-6 text-gray-700" />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
           </div>
         </button>
       </div>
@@ -530,10 +555,7 @@ export default function ProductDetailPage() {
           </div>
 
           <button
-            onClick={() => {
-              addToCart(product, quantity);
-              setQuantity(1);
-            }}
+            onClick={() => addToCartHandler(product, quantity,product.varientId)}
             className="w-[80%] py-4 bg-green-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2"
           >
             <ShoppingCart className="w-5 h-5" />
