@@ -20,6 +20,12 @@ const apiMap = {
     remove: "/autoparts/cart/remove",
     edit: "/autoparts/cart/edit",
   },
+  electronicsmarketplace:{
+    add:"/user/cart/addv2",
+    list:"/user/cart/listv2",
+    remove:"/user/cart/remove",
+    edit: "/user/cart/edit",
+  }
 };
 
 export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
@@ -52,7 +58,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+      console.log(res.data?.data?.rows)
       const items = res.data?.data?.rows || [];
       setCartItems(items);
 
@@ -127,18 +133,20 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
 
     await fetchCartItems();
 
+    toast.dismiss("quantity-toast"); 
     toast.custom(
       <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
         Quantity updated successfully
-      </div>
+      </div>,
+      { id: "quantity-toast",duration:500 }
     );
   } catch (err) {
     console.error("Error updating cart quantity:", err);
     await fetchCartItems(); 
     toast.dismiss("quantity-toast"); 
     toast.custom(
-      <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-        Quantity updated successfully
+      <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+        Quantity updation error
       </div>,
       { id: "quantity-toast",duration:500 }
     );
