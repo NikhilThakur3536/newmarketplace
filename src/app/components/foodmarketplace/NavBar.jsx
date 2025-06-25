@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 import { ClipboardList, MapPin, ShoppingCart } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
+import { useCart } from "@/app/context/CartContext";
 
 export default function FoodNavBar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { cartCount } = useCart(); 
 
   const icons = useMemo(
     () => [
@@ -63,11 +65,21 @@ export default function FoodNavBar() {
         key: "cart",
         path: "/foodmarketplace/cart",
         svg: (isActive) => (
-          <ShoppingCart
-            size={30}
-            fill={isActive ? "white" : "#E72068"}
-            color={isActive ? "white" : "#E72068"}
-          />
+          <div className="relative">
+            <ShoppingCart
+              size={30}
+              fill={isActive ? "white" : "#E72068"}
+              color={isActive ? "white" : "#E72068"}
+            />
+            {cartCount > 0 && (
+              <span
+                className="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                data-testid="cart-count"
+              >
+                {cartCount}
+              </span>
+            )}
+          </div>
         ),
       },
       {
