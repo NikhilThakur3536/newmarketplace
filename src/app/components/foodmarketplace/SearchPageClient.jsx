@@ -42,7 +42,7 @@ export default function SearchPageClient() {
           offset: 0,
           languageId: "2bfa9d89-61c4-401e-aae3-346627460558",
           searchKey: searchKey || undefined,
-          categoryId: searchKey ? undefined : categoryId || undefined,
+          categoryIds: [searchKey ? undefined : categoryId || undefined],
         },
         {
           headers: {
