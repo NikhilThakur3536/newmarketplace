@@ -192,7 +192,7 @@ export default function FoodItemCard({ item }) {
                   onClick={handleAddToCart}
                   className="w-full bg-lightpink text-white font-bold py-2 rounded-xl"
                 >
-                  Add to Cart ₹{totalPrice}
+                  Add to Cart ₹{totalPrice.toFixed(2)}
                 </button>
               </div>
             </motion.div>

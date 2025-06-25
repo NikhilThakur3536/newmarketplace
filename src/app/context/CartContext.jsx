@@ -123,7 +123,6 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
       }
     );
 
-    // Log response to verify backend update
     console.log("Update cart response:", response.data);
 
     await fetchCartItems();
@@ -135,13 +134,15 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
     );
   } catch (err) {
     console.error("Error updating cart quantity:", err);
-    await fetchCartItems(); // Re-sync with server
+    await fetchCartItems(); 
+    toast.dismiss("quantity-toast"); 
     toast.custom(
-      <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-        Failed to update quantity
-      </div>
+      <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+        Quantity updated successfully
+      </div>,
+      { id: "quantity-toast",duration:500 }
     );
-    throw err; // Let caller handle error
+    throw err; 
   }
 };
 
