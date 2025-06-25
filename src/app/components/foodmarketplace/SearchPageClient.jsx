@@ -30,34 +30,37 @@ export default function SearchPageClient() {
     }
   }, [searchParams]);
 
-  const fetchProducts = async () => {
-    const token = localStorage.getItem("token");
-    setLoading(true);
+ const fetchProducts = async () => {
+  const token = localStorage.getItem("token");
+  setLoading(true);
 
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/user/product/listv1`,
-        {
-          limit: 4000,
-          offset: 0,
-          languageId: "2bfa9d89-61c4-401e-aae3-346627460558",
-          searchKey: searchKey || undefined,
-          categoryIds: [searchKey ? undefined : categoryId || undefined],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  try {
+    const payload = {
+      limit: 4000,
+      offset: 0,
+      languageId: "2bfa9d89-61c4-401e-aae3-346627460558",
+    };
 
-      setProducts(res.data?.data?.rows || []);
-    } catch (err) {
-      console.error("Error fetching products", err);
-    } finally {
-      setLoading(false);
+    if (searchKey) {
+      payload.searchKey = searchKey;
+    } else if (categoryId) {
+      payload.categoryIds = [categoryId];
     }
-  };
+
+    const res = await axios.post(`${BASE_URL}/user/product/listv1`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setProducts(res.data?.data?.rows || []);
+  } catch (err) {
+    console.error("Error fetching products", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchProducts();
