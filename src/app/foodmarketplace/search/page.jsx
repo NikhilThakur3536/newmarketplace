@@ -6,6 +6,7 @@ import axios from "axios";
 import { SearchIcon } from "lucide-react";
 import FoodItemCard from "@/app/components/foodmarketplace/FoodItemCard";
 import FoodNavBar from "@/app/components/foodmarketplace/NavBar";
+import { Suspense } from "react";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -72,6 +73,7 @@ export default function SearchPage() {
   };
 
   return (
+    <Suspense>
     <div className="min-h-screen flex justify-center">
       <div className="max-w-md w-full flex flex-col relative min-h-screen">
         <div className="sticky top-0 p-2 w-full bg-white shadow-sm z-50">
@@ -111,5 +113,6 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+    </Suspense>
   );
 }
