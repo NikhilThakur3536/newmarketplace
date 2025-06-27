@@ -76,7 +76,7 @@ export const CouponProvider = ({ children }) => {
 
   const clearCoupons = () => {
     setCoupons([]);
-    setconcealmentsetError(null);
+    setError(null);
   };
 
   return (

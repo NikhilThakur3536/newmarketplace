@@ -112,13 +112,14 @@ export default function RestaurantPage() {
         );
 
         if (res.data.success) {
+          console.log("items structured",res.data.data.rows)
           const structured = formatCategories(res.data.data.rows);
           setCategoriesData(structured);
-          // Initialize all categories as expanded
           const initialExpanded = Object.keys(structured).reduce((acc, cat) => {
             acc[cat] = true;
             return acc;
           }, {});
+          console.log("initial expanded",initialExpanded)
           setExpandedCategories(initialExpanded);
         } else {
           console.warn("Failed to fetch products");

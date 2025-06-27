@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const FavoriteContext = createContext();
 
@@ -23,7 +24,7 @@ export const FavoriteProvider = ({ children }) => {
       console.log("No token, redirecting to login");
       setShowPopup({
         type: "error",
-        message: "Please log in to view your favorites.",
+        message: "Please log in to view your favorites.", 
       });
       setTimeout(() => {
         setShowPopup(null);
@@ -36,7 +37,7 @@ export const FavoriteProvider = ({ children }) => {
     try {
       const payload = { languageId: "2bfa9d89-61c4-401e-aae3-346627460558" };
       console.log("Fetching favorites with payload:", payload);
-      const response = await axios.post(`${BASE_URL}/user/favoriteProduct/list`, payload, {
+      const response = await axios.post(`${BASE_URL}/user/favoriteProduct/listv1`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -90,7 +91,7 @@ export const FavoriteProvider = ({ children }) => {
       setTimeout(() => {
         setShowPopup(null);
         router.push("/foodmarketplace/login");
-      }, 2000);
+      }, 500);
       return;
     }
 
@@ -107,8 +108,13 @@ export const FavoriteProvider = ({ children }) => {
           }
         );
         console.log("Remove Favorite Response:", response.data);
-        setShowPopup({ type: "success", message: `${name} removed from favorites!` });
-      } else {
+        toast.custom(
+        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          {name} removed from favorites!
+        </div>,
+        { id: "quantity-toast", duration: 300 }
+        ); 
+        } else {
         const response = await axios.post(
           `${BASE_URL}/user/favoriteProduct/add`,
           { productId, productVarientUomId },
@@ -120,18 +126,22 @@ export const FavoriteProvider = ({ children }) => {
           }
         );
         console.log("Add Favorite Response:", response.data);
-        setShowPopup({ type: "success", message: `${name} added to favorites!` });
+        toast.custom(
+        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          {name}adde to favorites!
+        </div>,
+        { id: "quantity-toast", duration: 300 }
+        )
       }
 
       fetchFavorites();
-      setTimeout(() => setShowPopup(null), 2000);
     } catch (error) {
       console.error("Error toggling favorite:", error);
       setShowPopup({
         type: "error",
         message: error.response?.data?.message || "Failed to update favorites.",
       });
-      setTimeout(() => setShowPopup(null), 3000);
+      setTimeout(() => setShowPopup(null), 300);
     }
   };
 

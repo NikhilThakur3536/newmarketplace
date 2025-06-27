@@ -3,13 +3,23 @@
 import { motion } from "framer-motion";
 import { ClipboardList, MapPin, ShoppingCart } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useCart } from "@/app/context/CartContext";
 
 export default function FoodNavBar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { cartCount } = useCart(); 
+  const { cartCount, fetchCartItems } = useCart();
+
+  useEffect(() => {
+    const handleCartUpdate = (e) => {
+      if (e.detail?.marketplace === "foodmarketplace") {
+        fetchCartItems();
+      }
+    };
+    window.addEventListener("cart-updated", handleCartUpdate);
+    return () => window.removeEventListener("cart-updated", handleCartUpdate);
+  }, [fetchCartItems]);
 
   const icons = useMemo(
     () => [
@@ -73,7 +83,7 @@ export default function FoodNavBar() {
             />
             {cartCount > 0 && (
               <span
-                className="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                className="absolute -top-2 -right-2 bg-lightpink text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
                 data-testid="cart-count"
               >
                 {cartCount}

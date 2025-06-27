@@ -2,38 +2,42 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, ShoppingCart, Minus, Plus, Heart, Send, Smile } from "lucide-react";
+import { ChevronLeft, ShoppingCart, Minus, Plus, Heart, Send, Smile,Trash2 } from "lucide-react";
 import axios from "axios";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion,AnimatePresence } from "framer-motion";
 import { useChat } from "@/app/context/ChatContext";
 import { useCart } from "@/app/context/CartContext";
+import { useFavorite } from "@/app/context/FavouriteContext";
 import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const languageId = "2bfa9d89-61c4-401e-aae3-346627460558";
 
-const ChatInterface = ({ onClose, participantId }) => {
-  const { chatId, messages, isSending, isChatLoading, chatError, sendMessage, fetchMessages } = useChat();
-  const [newMessage, setNewMessage] = useState("");
+const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
+  const { chatId, messages, isSending, isChatLoading, chatError, sendMessage, fetchMessages, deleteMessage, participantId } = useChat();
+  const [newMessage, setNewMessage] = useState('');
+  const [proposedPrice, setProposedPrice] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
     if (chatId) {
-      fetchMessages(chatId, participantId);
+      fetchMessages(chatId);
     }
-  }, [chatId, participantId, fetchMessages]);
+  }, [chatId, fetchMessages]);
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() && !isSending && chatId) {
-      const success = await sendMessage(chatId, newMessage);
+    if ((newMessage.trim() || proposedPrice) && !isSending && chatId && productId) {
+      const messageText = proposedPrice ? `${newMessage.trim()}` : newMessage.trim();
+      const success = await sendMessage(chatId, messageText, proposedPrice || null, productId);
       if (success) {
-        setNewMessage("");
+        setNewMessage('');
+        setProposedPrice('');
         setTimeout(() => {
           setIsTyping(true);
           setTimeout(() => setIsTyping(false), 2000);
@@ -43,153 +47,211 @@ const ChatInterface = ({ onClose, participantId }) => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
+  const handleDeleteMessage = (messageId) => {
+    if (messageId) {
+      deleteMessage(messageId);
+    }
+  };
+
   return (
     <motion.div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
     >
       <motion.div
-        className="w-full max-w-md bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 relative"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100/50 overflow-hidden"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/30 p-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <motion.div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500 shadow-lg">
-                  <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-700">AC</span>
-                  </div>
-                </motion.div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-              </div>
-              <div>
-                <motion.h2 className="text-lg font-semibold text-gray-800">Seller</motion.h2>
-                <p className="text-sm text-gray-500 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />Online
-                </p>
-              </div>
+        {/* Header */}
+        <div className="bg-white/95 p-4 border-b border-gray-100/50 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <motion.div
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center"
+                whileHover={{ scale: 1.1 }}
+              >
+                <span className="text-sm font-semibold text-white">S</span>
+              </motion.div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse" />
             </div>
-            <button
-              onClick={onClose}
-              className="h-10 w-10 flex items-center justify-center rounded-full text-gray-600 hover:text-gray-800 hover:bg-gray-100/50 transition-all duration-300"
-            >
-              <span className="text-sm font-semibold">Close</span>
-            </button>
+            <div>
+              <h2 className="text-base font-medium text-gray-800">Seller</h2>
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                Online
+              </p>
+            </div>
           </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+          >
+            Close
+          </button>
         </div>
 
-        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-white/20 to-gray-50/20 scrollbar-thin scrollbar-thumb-gray-300/50 scrollbar-track-transparent">
+        {/* Messages Area */}
+        <div className="h-[28rem] overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50/50 to-white/50 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
           {isChatLoading ? (
-            <div className="text-center text-gray-500">Loading messages...</div>
+            <div className="text-center text-gray-400 text-sm">Loading messages...</div>
           ) : chatError ? (
-            <div className="text-center text-red-500">{chatError}</div>
+            <div className="text-center text-red-400 text-sm">{chatError}</div>
           ) : (
-            messages.map((msg) => (
-              <motion.div
-                key={msg.id}
-                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                initial={{ opacity: 0, x: msg.sender === "user" ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <div
-                  className={`max-w-xs px-5 py-3 rounded-2xl relative group ${
-                    msg.sender === "user"
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-br-md shadow-lg"
-                      : "bg-white/90 text-gray-800 border border-gray-200/50 rounded-bl-md shadow-md backdrop-blur-sm"
-                  }`}
+            <AnimatePresence>
+              {messages.map((msg) => (
+                <motion.div
+                  key={msg.id}
+                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <p className="text-sm leading-relaxed">{msg.text}</p>
-                  {msg.attachments?.length > 0 && (
-                    <div className="mt-2">
-                      {msg.attachments.map((url, i) => (
-                        <a
-                          key={i}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-blue-400 underline"
-                        >
-                          Attachment {i + 1}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                  <p className={`text-xs mt-2 ${msg.sender === "user" ? "text-blue-100" : "text-gray-500"}`}>
-                    {msg.timestamp}
-                  </p>
                   <div
-                    className={`absolute top-4 w-3 h-3 transform rotate-45 ${
-                      msg.sender === "user"
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 -right-1"
-                        : "bg-white -left-1 border-l border-b border-gray-200/50"
+                    className={`relative max-w-[70%] p-3 rounded-lg shadow-sm group ${
+                      msg.sender === 'user'
+                        ? 'bg-indigo-500 text-white rounded-br-none'
+                        : 'bg-white/80 border border-gray-100/50 text-gray-800 rounded-bl-none'
                     }`}
-                  />
-                </div>
-              </motion.div>
-            ))
+                  >
+                    <p className="text-sm leading-relaxed">{msg.text}</p>
+                    {msg.proposedPrice && (
+                      <div className="mt-2 bg-yellow-100/20 rounded-md px-2 py-1 text-xs text-yellow-600">
+                        Proposed: ${parseFloat(msg.proposedPrice).toFixed(2)}
+                      </div>
+                    )}
+                    {msg.attachments?.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {msg.attachments.map((url, i) => (
+                          <a
+                            key={i}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-400 hover:underline"
+                          >
+                            Attachment {i + 1}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-indigo-200' : 'text-gray-400'}`}>
+                      {msg.timestamp}
+                    </p>
+                    {msg.sender === 'user' && (
+                      <motion.button
+                        onClick={() => handleDeleteMessage(msg.id)}
+                        className="absolute top-2 right-2 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </motion.button>
+                    )}
+                    <div
+                      className={`absolute top-2 w-2 h-2 transform rotate-45 ${
+                        msg.sender === 'user'
+                          ? 'bg-indigo-500 -right-1'
+                          : 'bg-white -left-1 border-l border-b border-gray-100/50'
+                      }`}
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           )}
           {isTyping && (
-            <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <
-
-div className="bg-white/90 text-gray-800 border border-gray-200/50 rounded-2xl rounded-bl-md px-5 py-3 shadow-md backdrop-blur-sm relative">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+            <motion.div
+              className="flex justify-start"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="bg-white/80 border border-gray-100/50 rounded-lg p-3 relative">
+                <div className="flex gap-1.5">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <div className="absolute top-4 w-3 h-3 transform rotate-45 bg-white -left-1 border-l border-b border-gray-200/50" />
+                <div className="absolute top-2 w-2 h-2 transform rotate-45 bg-white -left-1 border-l border-b border-gray-100/50" />
               </div>
             </motion.div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-gray-200/30">
-          <div className="flex items-center gap-3">
-            <button className="h-12 w-12 flex items-center justify-center rounded-full text-gray-600 hover:text-gray-800 hover:bg-gray-100/50 transition-all">
-              <Smile className="h-5 w-5" />
-            </button>
-            <div className="flex-1 relative">
+        {/* Input Area */}
+        <div className="p-4 bg-white/95 border-t border-gray-100/50">
+          <div className="space-y-3">
+            {/* Propose Price Section */}
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={proposedPrice}
+                onChange={(e) => setProposedPrice(e.target.value)}
+                placeholder="Propose price (e.g., 99.99)"
+                className="flex-1 bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all"
+                min="0"
+                step="0.01"
+                disabled={isSending || !chatId}
+              />
+              <motion.button
+                className="px-3 py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={isSending || !chatId}
+                onClick={() => proposedPrice && handleSendMessage()}
+              >
+                Propose
+              </motion.button>
+            </div>
+
+            {/* Message Input */}
+            <div className="flex items-center gap-2">
+              <button
+                className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
+                disabled={isSending || !chatId}
+              >
+                <Smile className="w-5 h-5" />
+              </button>
               <input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
-                className="w-full bg-gray-50/80 border border-gray-200/50 rounded-2xl px-5 py-4 text-sm placeholder:text-gray-400 focus:bg-white focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-200/50 shadow-sm"
+                className="flex-1 bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all"
                 disabled={isSending || !chatId}
               />
-              {newMessage && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-              )}
+              <motion.button
+                onClick={handleSendMessage}
+                disabled={(!newMessage.trim() && !proposedPrice) || isSending || !chatId || !productId}
+                className={`p-2 rounded-lg flex items-center justify-center transition-all ${
+                  (!newMessage.trim() && !proposedPrice) || isSending || !chatId || !productId
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                }`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                {isSending ? (
+                  <div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </motion.button>
             </div>
-            <button
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim() || isSending || !chatId}
-              className={`h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 ${
-                !newMessage.trim() || isSending || !chatId
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-110 active:scale-95"
-              }`}
-            >
-              {isSending ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </button>
           </div>
         </div>
       </motion.div>
@@ -207,10 +269,10 @@ export default function ProductDetailPage() {
   const [similarProductsLoading, setSimilarProductsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [favorites, setFavorites] = useState([]);
   const [showChat, setShowChat] = useState(false);
   const { initiateChat, clearChat } = useChat();
   const { addToCart, cartCount } = useCart();
+  const { favoriteItems, toggleFavorite } = useFavorite();
 
   useEffect(() => {
     const fetchProductById = async () => {
@@ -235,51 +297,34 @@ export default function ProductDetailPage() {
       let prod = null;
       try {
         const response = await axios.post(url, body, { headers });
+        console.log(response.data.data?.rows)
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           prod = response.data.data.rows.find((p) => p.id === id);
           if (prod) {
-            if (!Array.isArray(prod.productLanguages) || prod.productLanguages.length === 0) {
-              console.warn("Product has no valid productLanguages:", prod);
-            }
-            if (!Array.isArray(prod.variants) || prod.variants.length === 0) {
-              console.warn("Product has no valid variants:", prod);
-            }
-            if (!Array.isArray(prod.productImages) || prod.productImages.length === 0) {
-              console.warn("Product has no valid productImages:", prod);
-            }
-
             setProduct({
               id: prod.id,
               name: prod.productLanguages?.[0]?.name || "Unnamed Product",
               price: prod.varients?.[0]?.inventory?.price || 0,
               image: prod.productImages?.[0]?.url || "/placeholder.jpg",
               brand: prod.manufacturer?.name || "Unknown",
-              manufacturerId: prod.manufacturer?.id || null,
+              storeId: prod.store?.id || null,
               category: prod.category?.categoryLanguages?.[0]?.name || "General",
               categoryId: prod.category?.id || null,
               rating: prod.rating || 4,
               reviews: prod.reviews || 10,
               specifications: Array.isArray(prod.specifications) ? prod.specifications : [],
               longDescription: prod.productLanguages?.[0]?.longDescription || "No description available",
-              varientId: prod.varients?.[0]?.id
+              varientId: prod.varients?.[0]?.id,
+              inventoryId:prod.varients?.[0]?.inventory?.id
             });
           } else {
             setError("Product not found in response");
-            console.warn("Product with ID not found in response:", id);
           }
         } else {
           setError("No products found in response");
-          console.warn("No products found in response:", response.data);
         }
       } catch (err) {
-        const errorMessage = err.message || "Unknown error occurred";
-        setError(`Failed to fetch product: ${errorMessage}`);
-        console.error("Axios Error:", err.response?.data || err.message, err);
-        if (prod) {
-          console.error("Product data at error:", prod);
-        } else {
-          console.error("No product data available (prod is undefined)");
-        }
+        setError(`Failed to fetch product: ${err.message || "Unknown error occurred"}`);
       } finally {
         setLoading(false);
       }
@@ -289,9 +334,11 @@ export default function ProductDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    if (!product?.categoryId) {
-      return;
-    }
+    console.log("product details", product);
+  });
+
+  useEffect(() => {
+    if (!product?.categoryId) return;
 
     const fetchSimilarProducts = async () => {
       setSimilarProductsLoading(true);
@@ -315,36 +362,21 @@ export default function ProductDetailPage() {
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           const products = response.data.data.rows
             .filter((p) => String(p.id) !== String(id))
-            .map((p) => {
-              if (!Array.isArray(p.productLanguages) || p.productLanguages.length === 0) {
-                console.warn("Similar product has no valid productLanguages:", p);
-              }
-              if (!Array.isArray(p.variants) || p.variants.length === 0) {
-                console.warn("Similar product has no valid variants:", p);
-              }
-              if (!Array.isArray(p.productImages) || p.productImages.length === 0) {
-                console.warn("Similar product has no valid productImages:", p);
-              }
-
-              return {
-                id: p.id,
-                name: p.productLanguages?.[0]?.name || "Unnamed Product",
-                price: p.varients?.[0]?.inventory?.price || 0,
-                image: p.productImages?.[0]?.url || "/placeholder.jpg",
-                varientId:p.varients?.[0]?.id
-              };
-            })
+            .map((p) => ({
+              id: p.id,
+              name: p.productLanguages?.[0]?.name || "Unnamed Product",
+              price: p.varients?.[0]?.inventory?.price || 0,
+              image: p.productImages?.[0]?.url || "/placeholder.jpg",
+              varientId: p.varients?.[0]?.id,
+            }))
             .filter((p) => p.id);
           setSimilarProducts(products);
         } else {
-          console.warn("⚠️ No similar products found in response.");
           setSimilarProducts([]);
           setSimilarProductsError("No similar products found.");
         }
       } catch (err) {
-        const errorMessage = err.response?.data?.message || err.message;
-        setSimilarProductsError(`Failed to fetch similar products: ${errorMessage}`);
-        console.error("🔥 Failed to fetch similar products:", err.response?.data || err.message);
+        setSimilarProductsError(`Failed to fetch similar products: ${err.message || "Unknown error occurred"}`);
       } finally {
         setSimilarProductsLoading(false);
       }
@@ -354,12 +386,12 @@ export default function ProductDetailPage() {
   }, [product?.categoryId, id]);
 
   const handleOpenChat = async () => {
-    if (!product?.manufacturerId) {
+    if (!product?.storeId) {
       console.warn("⚠️ No manufacturer ID available for chat");
       return;
     }
 
-    const newChatId = await initiateChat(product.manufacturerId);
+    const newChatId = await initiateChat(product.storeId,product.id,product.varientId,product.inventoryId);
     if (newChatId) {
       setShowChat(true);
     }
@@ -370,20 +402,32 @@ export default function ProductDetailPage() {
     clearChat();
   };
 
-  const toggleFavorite = (productId) => {
-    setFavorites((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+  const handleFavoriteClick = (simProduct) => {
+    const isFavorite = favoriteItems.some((item) => item.id === simProduct.id || item.productId === simProduct.id);
+    const name = simProduct.name || "Item";
+
+    toggleFavorite({
+      productId: simProduct.id,
+      name,
+      isFavorite,
+    });
+    toast.dismiss("removefav-toast");
+    toast.custom(
+      <div
+        className={`px-4 py-2 rounded-lg shadow-md font-semibold text-white ${isFavorite ? "bg-red-600" : "bg-green-600"}`}
+      >
+        {isFavorite ? `${name} removed from favorites` : `${name} added to favorites`}
+      </div>,
+      { id: "removefav-toast", duration: 500 }
     );
   };
 
-  const addToCartHandler = async (product, qty,varientId) => {
+  const addToCartHandler = async (product, qty, varientId) => {
     try {
       const payload = {
         productId: product.id,
         quantity: qty,
-        varientId:varientId
+        varientId: varientId,
       };
       await addToCart(payload);
       toast.custom(
@@ -405,13 +449,8 @@ export default function ProductDetailPage() {
 
   const formatPrice = (price) => `$${parseFloat(price).toFixed(2)}`;
 
-  if (loading) {
-    return <div className="p-10 text-center text-gray-500">Loading product...</div>;
-  }
-
-  if (error || !product) {
-    return <div className="p-10 text-center text-red-500">{error || "Product not found."}</div>;
-  }
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading product...</div>;
+  if (error || !product) return <div className="p-10 text-center text-red-500">{error || "Product not found."}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -434,12 +473,7 @@ export default function ProductDetailPage() {
 
       <div className="p-4 space-y-6">
         <div className="bg-white rounded-2xl p-4 relative h-56">
-          <Image
-            fill
-            src={product.image}
-            alt={product.name}
-            className="w-full h-64 object-cover rounded-lg bg-gray-100"
-          />
+          <Image fill src={product.image} alt={product.name} className="w-full h-64 object-cover rounded-lg bg-gray-100" />
         </div>
 
         <div className="bg-white rounded-2xl p-4">
@@ -447,8 +481,8 @@ export default function ProductDetailPage() {
             <h1 className="text-xl font-bold text-gray-900 flex-1">{product.name}</h1>
             <button
               onClick={handleOpenChat}
-              className="p-2 bg-green-500 text-white rounded-lg text-sm"
-              disabled={!product.manufacturerId}
+              className="p-2 bg-green-500 text-white rounded-lg text-sm z-40"
+              disabled={!product.storeId}
             >
               💬 Chat
             </button>
@@ -496,40 +530,47 @@ export default function ProductDetailPage() {
             <div className="mb-36">
               <h3 className="font-medium mb-4">Similar Products</h3>
               <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-thin scrollbar-thumb-gray-300">
-                {similarProducts.map((simProduct) => (
-                  <div
-                    key={simProduct.id}
-                    className="min-w-[200px] bg-white rounded-2xl p-4 shadow-sm"
-                  >
-                    <div className="relative mb-3">
-                      <img
-                        src={simProduct.image}
-                        alt={simProduct.name}
-                        className="w-full h-32 object-cover rounded-lg bg-gray-100"
-                      />
-                      <button
-                        onClick={() => toggleFavorite(simProduct.id)}
-                        className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm"
-                      >
-                        <Heart
-                          className={`w-4 h-4 ${
-                            favorites.includes(simProduct.id)
-                              ? "fill-red-500 text-red-500"
-                              : "text-gray-400"
-                          }`}
+                {similarProducts.map((simProduct) => {
+                  const isFavorite = favoriteItems.some(
+                    (item) => item.id === simProduct.id || item.productId === simProduct.id
+                  );
+                  return (
+                    <div key={simProduct.id} className="min-w-[200px] bg-white rounded-2xl p-4 shadow-sm">
+                      <div className="relative mb-3">
+                        <img
+                          src={simProduct.image}
+                          alt={simProduct.name}
+                          className="w-full h-32 object-cover rounded-lg bg-gray-100"
                         />
+                        <button
+                          onClick={() => handleFavoriteClick(simProduct)}
+                          className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm"
+                        >
+                          <Heart
+                            className="w-4 h-4"
+                            fill={isFavorite ? "red" : "white"}
+                            stroke={isFavorite ? "red" : "black"}
+                          />
+                        </button>
+                      </div>
+                      <h3 className="font-medium text-sm mb-1 line-clamp-2">{simProduct.name}</h3>
+                      <p className="text-lg font-bold text-gray-900">{formatPrice(simProduct.price)}</p>
+                      <button
+                        onClick={() => router.push(`/electronicsmarketplace/product/${simProduct.id}`)}
+                        className="w-full mt-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => addToCartHandler(simProduct, 1, simProduct.varientId)}
+                        className="w-full mt-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCart className="w-5 h-5" />
+                        Add to Cart
                       </button>
                     </div>
-                    <h3 className="font-medium text-sm mb-1 line-clamp-2">{simProduct.name}</h3>
-                    <p className="text-lg font-bold text-gray-900">{formatPrice(simProduct.price)}</p>
-                    <button
-                      onClick={() => router.push(`/electronicsmarketplace/product/${simProduct.id}`)}
-                      className="w-full mt-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -555,7 +596,7 @@ export default function ProductDetailPage() {
           </div>
 
           <button
-            onClick={() => addToCartHandler(product, quantity,product.varientId)}
+            onClick={() => addToCartHandler(product, quantity, product.varientId)}
             className="w-[80%] py-4 bg-green-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2"
           >
             <ShoppingCart className="w-5 h-5" />
@@ -564,7 +605,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {showChat && <ChatInterface onClose={handleCloseChat} participantId={product.manufacturerId} />}
+      {showChat && product && <ChatInterface onClose={handleCloseChat} productId={product.id} variantId={product.varientId} inventoryId={product.inventoryId}/>}
     </div>
   );
 }

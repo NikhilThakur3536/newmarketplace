@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useFavorite } from "@/app/context/FavouriteContext";
 
 export default function FoodItemCard({ item }) {
+  console.log("foodcartitem",item)
   const { toggleFavorite, favoriteItems } = useFavorite();
   const isFavorite = favoriteItems.some((fav) => fav.id === item.id);
   const [isModalOpen, setIsModalOpen] = useState(false);

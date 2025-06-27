@@ -10,7 +10,7 @@ export const ProductProvider = ({ children }) => {
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]); // Changed to array
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchKey, setSearchKey] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(12);
@@ -81,6 +81,7 @@ export const ProductProvider = ({ children }) => {
       });
 
       const data = await res.json();
+      console.log("products",data)
       if (data.success) {
         setProducts(
           data.data.rows.map((product) => ({
@@ -89,6 +90,7 @@ export const ProductProvider = ({ children }) => {
             price: product.varients?.[0]?.inventory?.price || 0,
             image: product.productImages[0]?.url || "/placeholder.svg",
             categoryId: product.categoryId,
+            productVarientUomId: product.varients?.[0]?.id
           }))
         );
         setTotalCount(data.data.count || 0);

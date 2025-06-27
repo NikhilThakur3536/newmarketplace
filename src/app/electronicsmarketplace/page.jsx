@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useProduct } from "../context/ProductContext";
+import { useFavorite } from "../context/FavouriteContext";
 import { useRouter } from "next/navigation";
 import { Menu, User, Search, Heart } from "lucide-react";
 import FilterModal from "../components/electronicsmarketplcae/FilterModal";
 import BottomNavigation from "../components/electronicsmarketplcae/BottomNavigation";
+import toast from "react-hot-toast";
 
 export default function HomePage() {
   const {
@@ -24,7 +26,7 @@ export default function HomePage() {
     error,
   } = useProduct();
 
-  const [favorites, setFavorites] = useState([]);
+  const { favoriteItems, toggleFavorite } = useFavorite();
   const router = useRouter();
 
   const handleSearch = (e) => {
@@ -35,14 +37,12 @@ export default function HomePage() {
   };
 
   const handleCategorySelect = (categoryId) => {
-    // Toggle category in selectedCategories array
     setSelectedCategories((prev) =>
       prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId) // Remove if already selected
-        : [...prev, categoryId] // Add if not selected
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
     );
     setPage(1);
-    // Fetch products with updated categories
     fetchProducts(
       selectedCategories.includes(categoryId)
         ? selectedCategories.filter((id) => id !== categoryId)
@@ -52,16 +52,32 @@ export default function HomePage() {
     );
   };
 
-  const toggleFavorite = (productId) => {
-    setFavorites((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+  const formatPrice = (price) => `$${parseFloat(price).toFixed(2)}`;
+
+  const totalPages = Math.ceil(totalCount / limit);
+
+  const handleFavoriteClick = (product) => {
+    const isFavorite = favoriteItems.some(
+      (item) => item.id === product.id || item.productId === product.id
+    );
+    const name = product.name || "Item";
+
+    toggleFavorite({
+      productId: product.id,
+      name,
+      isFavorite,
+    });
+
+    toast.custom(
+      <div
+        className={`px-4 py-2 rounded-lg shadow-md font-semibold text-white ${
+          isFavorite ? "bg-red-600" : "bg-green-600"
+        }`}
+      >
+        {isFavorite ? `${name} removed from favorites` : `${name} added to favorites`}
+      </div>
     );
   };
-
-  const formatPrice = (price) => `$${parseFloat(price).toFixed(2)}`;
-  const totalPages = Math.ceil(totalCount / limit);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -120,46 +136,49 @@ export default function HomePage() {
 
           {!loading && !error && (
             <div className="grid grid-cols-2 gap-4">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-white rounded-2xl p-4 shadow-sm"
-                >
-                  <div className="relative mb-3">
-                    <img
-                      src={product.image || "/placeholder.jpg"}
-                      alt={product.name}
-                      className="w-full h-32 object-cover rounded-lg bg-gray-100"
-                    />
-                    <button
-                      onClick={() => toggleFavorite(product.id)}
-                      className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm"
-                    >
-                      <Heart
-                        className={`w-4 h-4 ${
-                          favorites.includes(product.id)
-                            ? "fill-red-500 text-red-500"
-                            : "text-gray-400"
-                        }`}
+              {products.map((product) => {
+                const isFavorite = favoriteItems.some(
+                  (item) => item.id === product.id || item.productId === product.id
+                );
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-2xl p-4 shadow-sm"
+                  >
+                    <div className="relative mb-3">
+                      <img
+                        src={product.image || "/placeholder.jpg"}
+                        alt={product.name}
+                        className="w-full h-32 object-cover rounded-lg bg-gray-100"
                       />
+                      <button
+                        onClick={() => handleFavoriteClick(product)}
+                        className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm"
+                      >
+                        <Heart
+                          className="w-4 h-4"
+                          fill={isFavorite ? "red" : "white"}
+                          stroke={isFavorite ? "red" : "black"}
+                        />
+                      </button>
+                    </div>
+                    <h3 className="font-medium text-sm mb-1 line-clamp-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-lg font-bold text-gray-900">
+                      {formatPrice(product.price)}
+                    </p>
+                    <button
+                      onClick={() =>
+                        router.push(`/electronicsmarketplace/product/${product.id}`)
+                      }
+                      className="w-full mt-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
+                    >
+                      View Details
                     </button>
                   </div>
-                  <h3 className="font-medium text-sm mb-1 line-clamp-2">
-                    {product.name}
-                  </h3>
-                  <p className="text-lg font-bold text-gray-900">
-                    {formatPrice(product.price)}
-                  </p>
-                  <button
-                    onClick={() =>
-                      router.push(`/electronicsmarketplace/product/${product.id}`)
-                    }
-                    className="w-full mt-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
-                  >
-                    View Details
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

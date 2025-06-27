@@ -7,12 +7,13 @@ import { useOrder } from "@/app/context/OrderContext";
 import { useCustomerAddresses } from "@/app/context/CustomerAddressContext";
 import { useCoupons } from "@/app/context/CouponContext";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { debounce } from "lodash";
 import { motion, AnimatePresence } from "framer-motion";
 import FoodNavBar from "@/app/components/foodmarketplace/NavBar";
 
 export default function Cart() {
-  const { cartItems, removeFromCart, updateCartQuantity, fetchCartItems } = useCart();
+  const { cartItems, removeFromCart, updateCartQuantity, fetchCartItems, isLoading: cartLoading } = useCart();
   const { placeOrder } = useOrder();
   const { addresses, loading: addressesLoading } = useCustomerAddresses();
   const { coupons, loading: couponsLoading, error: couponError, fetchCoupons } = useCoupons();
@@ -23,61 +24,90 @@ export default function Cart() {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [orderType, setOrderType] = useState("DELIVERY");
   const [selectedCoupon, setSelectedCoupon] = useState(null);
-  const [lastRestaurantUrl,setLastRestaurantUrl] = useState("")
+  const [lastRestaurantUrl, setLastRestaurantUrl] = useState("");
+  const [lastFetchedSubTotal, setLastFetchedSubTotal] = useState(null);
 
+  // Debounced fetchCoupons
+  const debouncedFetchCoupons = useCallback(
+    debounce((amount) => {
+      if (Number.isFinite(amount) && amount > 0) {
+        fetchCoupons(amount);
+        setLastFetchedSubTotal(amount);
+      }
+    }, 500),
+    [fetchCoupons]
+  );
 
+  // Set last restaurant URL and fetch cart items on mount
   useEffect(() => {
     const lastRestaurantUrl = localStorage.getItem("lastRestaurantUrl") || "/foodmarketplace";
-    setLastRestaurantUrl(lastRestaurantUrl)
-  }, []);
+    setLastRestaurantUrl(lastRestaurantUrl);
+    fetchCartItems();
+  }, [fetchCartItems]);
 
+  // Sync localCartItems with cartItems, sanitizing data
   useEffect(() => {
-    if (!isUpdating) {
-      setLocalCartItems(
-        cartItems.map((item) => ({
+    if (!cartLoading) {
+      const sanitizedItems = cartItems
+        .filter(item => item.id) // Ensure item.id exists
+        .map((item) => ({
           ...item,
-          quantity: Math.floor(item.quantity || 1),
-        }))
-      );
+          quantity: Number.isFinite(Number(item.quantity)) ? Math.floor(Number(item.quantity)) : 1,
+          priceInfo: {
+            price: Number.isFinite(Number(item.priceInfo?.price)) ? Number(item.priceInfo.price) : 0,
+          },
+        }));
+      setLocalCartItems(sanitizedItems);
     }
-  }, [cartItems, isUpdating]);
+  }, [cartItems, cartLoading]);
 
+  // Calculate subtotal
   const subTotal = useMemo(() => {
-    return localCartItems.reduce((sum, item) => {
-      return sum + Number(item.priceInfo?.price || 0) * (item.quantity || 1);
+    const total = localCartItems.reduce((sum, item) => {
+      const price = Number.isFinite(Number(item.priceInfo?.price)) ? Number(item.priceInfo.price) : 0;
+      const quantity = Number.isFinite(Number(item.quantity)) ? Number(item.quantity) : 1;
+      return sum + price * quantity;
     }, 0);
+    return Number.isFinite(total) ? total : 0;
   }, [localCartItems]);
 
-  const totalAmount = selectedCoupon
-    ? subTotal - Number(selectedCoupon.discountAmount || 0)
-    : subTotal;
+  // Calculate total amount with discount
+  const totalAmount = useMemo(() => {
+    const discount = Number.isFinite(Number(selectedCoupon?.discountAmount)) ? Number(selectedCoupon.discountAmount) : 0;
+    const total = Math.max(0, subTotal - discount);
+    return Number.isFinite(total) ? total : 0;
+  }, [subTotal, selectedCoupon]);
 
+  // Set default address
   useEffect(() => {
-    if (addresses.length > 0 && !selectedAddressId && !addressesLoading) {
+    if (!addressesLoading && addresses.length > 0 && !selectedAddressId) {
       setSelectedAddressId(addresses[0].id);
     }
   }, [addresses, addressesLoading, selectedAddressId]);
 
+  // Fetch coupons when subtotal changes
   useEffect(() => {
-    console.log("useEffect running, subTotal:", subTotal);
-    if (subTotal > 0) {
-      fetchCoupons(subTotal);
+    if (Number.isFinite(subTotal) && subTotal > 0 && !cartLoading && subTotal !== lastFetchedSubTotal) {
+      debouncedFetchCoupons(subTotal);
     }
-  }, [subTotal]);
+  }, [subTotal, cartLoading, lastFetchedSubTotal]);
 
+  // Fetch coupons when selectedCoupon changes
   useEffect(() => {
-    console.log("Current coupons state:", coupons, "Loading:", couponsLoading, "Error:", couponError);
-  }, [coupons, couponsLoading, couponError]);
+    if (selectedCoupon && Number.isFinite(subTotal) && subTotal > 0 && !cartLoading) {
+      debouncedFetchCoupons(subTotal);
+    }
+  }, [selectedCoupon, subTotal, cartLoading]);
 
+  // Handle quantity change
   const handleQuantityChange = async (itemIndex, delta) => {
     setIsUpdating(true);
     const item = localCartItems[itemIndex];
-    const currentQuantity = Math.floor(item.quantity || 1);
+    const currentQuantity = Number(item.quantity) || 1;
     const newQuantity = Math.max(1, currentQuantity + delta);
 
-    const updatedItem = { ...item, quantity: newQuantity };
     const updatedCart = [...localCartItems];
-    updatedCart[itemIndex] = updatedItem;
+    updatedCart[itemIndex] = { ...item, quantity: newQuantity };
     setLocalCartItems(updatedCart);
 
     try {
@@ -96,6 +126,7 @@ export default function Cart() {
     }
   };
 
+  // Handle checkout
   const handleProceedToCheckout = () => {
     if (addressesLoading) {
       alert("Addresses are still loading. Please wait.");
@@ -105,55 +136,66 @@ export default function Cart() {
       alert("No addresses available. Please add an address or choose PICKUP.");
       return;
     }
-    if (subTotal <= 0) {
-      alert("Cart is empty or invalid. Please add items to proceed.");
+    if (subTotal <= 0 || !Number.isFinite(subTotal)) {
+      alert("Cart is empty or invalid. Please add valid items to proceed.");
       return;
     }
     setIsModalOpen(true);
   };
 
+  // Close modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedCoupon(null);
   };
 
+  // Place order
   const handlePlaceOrder = async () => {
     if (orderType === "DELIVERY" && !selectedAddressId) {
       alert("Please select an address for delivery");
       return;
     }
 
-    const success = await placeOrder(
-      subTotal,
-      orderType === "DELIVERY" ? selectedAddressId : null,
-      orderType,
-      selectedCoupon?.code || "",
-      selectedCoupon?.discountAmount || 0
-    );
-    if (success) {
-      await Promise.all(localCartItems.map((item) => removeFromCart(item.id)));
-      await fetchCartItems();
-      setIsModalOpen(false);
-      setSelectedAddressId(null);
-      setSelectedCoupon(null);
-      router.push("/foodmarketplace/orders");
+    try {
+      const success = await placeOrder(
+        Number(subTotal),
+        orderType === "DELIVERY" ? selectedAddressId : null,
+        selectedCoupon?.code || "",
+        Number.isFinite(Number(selectedCoupon?.discountAmount)) ? Number(selectedCoupon.discountAmount) : 0,
+        Number(totalAmount),
+        orderType // Pass orderType to placeOrder
+      );
+      if (success) {
+        await Promise.all(localCartItems.map((item) => removeFromCart(item.id)));
+        await fetchCartItems();
+        setLocalCartItems([]);
+        setIsModalOpen(false);
+        setSelectedAddressId(null);
+        setSelectedCoupon(null);
+        setLastFetchedSubTotal(null);
+        router.push("/foodmarketplace/orders");
+      } else {
+        alert("Failed to place order. Please try again.");
+      }
+    } catch (error) {
+      console.error("Place order error:", error);
+      alert("An error occurred while placing the order. Please try again.");
     }
   };
 
   return (
     <div className="min-h-screen flex justify-center bg-white">
       <div className="max-w-md w-full">
-        {/* Header */}
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-lightpink">
           <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.push(lastRestaurantUrl)} />
           <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
             Cart
           </span>
         </div>
-
-        {/* Cart Items or Empty UI */}
         <div className="w-full px-4 py-4">
-          {localCartItems.length === 0 ? (
+          {cartLoading ? (
+            <p className="text-gray-600 text-center">Loading cart...</p>
+          ) : localCartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center mt-10 gap-4">
               <div className="w-fit h-fit rounded-full bg-lightpink flex items-center justify-center p-4">
                 <ShoppingCart color="white" size={55} />
@@ -176,20 +218,22 @@ export default function Cart() {
                     </div>
                     <h1 className="text-black font-semibold text-lg">{item.product?.productLanguages?.[0]?.name}</h1>
                     <span className="text-black font-semibold text-lg">
-                      ₹{(Number(item.priceInfo?.price || 0) * (item.quantity || 1)).toFixed(2)}
+                      ₹{((Number(item.priceInfo?.price) || 0) * (Number(item.quantity) || 1)).toFixed(2)}
                     </span>
                     <p className="text-gray-400 line-clamp-3">{item.product?.productLanguages?.[0]?.longDescription}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <button
                         onClick={() => handleQuantityChange(index, -1)}
                         className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                        disabled={isUpdating}
                       >
                         <Minus size={16} />
                       </button>
-                      <span className="font-semibold">{item.quantity || 1}</span>
+                      <span className="font-semibold">{Number(item.quantity) || 1}</span>
                       <button
                         onClick={() => handleQuantityChange(index, 1)}
                         className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                        disabled={isUpdating}
                       >
                         <Plus size={16} />
                       </button>
@@ -197,13 +241,14 @@ export default function Cart() {
                     <button
                       onClick={() => removeFromCart(item.id)}
                       className="flex items-center text-red-500 gap-1 mt-2 hover:text-red-700"
+                      disabled={isUpdating}
                     >
                       <Trash2 size={18} /> Remove
                     </button>
                   </div>
                   <div className="w-[50%] relative overflow-hidden rounded-lg">
                     <Image
-                      src={"/placeholder.jpg"}
+                      src={item.product?.image || "/placeholder.jpg"}
                       alt="food item"
                       fill
                       className="object-cover rounded-lg"
@@ -214,32 +259,25 @@ export default function Cart() {
                   </div>
                 </div>
               ))}
-
-              {/* Total Section */}
-              <div className="border-t pt-4 mt-4 border-gray-300">
+              <div className="border-t pt-4 mt-4 border-gray-300 mb-20">
                 <div className="flex justify-between px-2 text-lg font-semibold text-black">
                   <span>Total</span>
-                  <span>₹{totalAmount.toFixed(2)}</span>
+                  <span>₹{Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : "0.00"}</span>
                 </div>
               </div>
-
-              <div className="w-full mt-4 mb-18">
+              <div className="fixed max-w-md w-[80%] mt-4 bottom-8 -ml-2">
                 <button
                   onClick={handleProceedToCheckout}
-                  className="w-full py-2 bg-lightpink text-white rounded-lg font-bold hover:bg-pink-300"
+                  className="w-full py-2 bg-lightpink text-white rounded-lg font-bold hover:bg-pink-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  disabled={cartLoading || isUpdating}
                 >
                   Proceed to Checkout
                 </button>
               </div>
             </div>
           )}
-          <div className="bottom-0 fixed w-full max-w-md">
-            <FoodNavBar />
-          </div>
         </div>
       </div>
-
-      {/* Checkout Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <>
@@ -263,9 +301,7 @@ export default function Cart() {
                   ✕
                 </button>
               </div>
-
               <div className="mt-4 max-h-[50vh] overflow-y-auto">
-                {/* Order Type Selection */}
                 <div className="mb-4">
                   <h3 className="font-semibold text-gray-800 mb-2">Order Type</h3>
                   <div className="flex gap-4">
@@ -293,8 +329,6 @@ export default function Cart() {
                     </label>
                   </div>
                 </div>
-
-                {/* Address Selection (for Delivery) */}
                 {orderType === "DELIVERY" && (
                   <div className="mb-4">
                     <h3 className="font-semibold text-gray-800 mb-2">Select Delivery Address</h3>
@@ -303,9 +337,9 @@ export default function Cart() {
                     ) : addresses.length === 0 ? (
                       <p className="text-gray-600 text-center">No addresses available</p>
                     ) : (
-                      addresses.map((address) => (
+                      addresses.map((address, index) => (
                         <label
-                          key={address.id}
+                          key={address.id || `address-${index}`} // Fallback key
                           className="flex items-start gap-3 p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50"
                         >
                           <input
@@ -328,8 +362,6 @@ export default function Cart() {
                     )}
                   </div>
                 )}
-
-                {/* Coupon Selection */}
                 <div className="mb-4">
                   <h3 className="font-semibold text-gray-800 mb-2">Apply Coupon</h3>
                   {couponsLoading ? (
@@ -340,9 +372,9 @@ export default function Cart() {
                     <p className="text-gray-600 text-center">No coupons available</p>
                   ) : (
                     <div className="space-y-2">
-                      {coupons.map((coupon) => (
+                      {coupons.map((coupon, index) => (
                         <label
-                          key={coupon.code}
+                          key={coupon.code || `coupon-${index}`} // Fallback key
                           className="flex items-center justify-between p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
                         >
                           <div className="flex items-center gap-2">
@@ -354,7 +386,9 @@ export default function Cart() {
                               onChange={() =>
                                 setSelectedCoupon({
                                   code: coupon.code,
-                                  discountAmount: coupon.discountAmount || 0,
+                                  discountAmount: Number.isFinite(Number(coupon.discountAmount))
+                                    ? Number(coupon.discountAmount)
+                                    : 0,
                                 })
                               }
                               className="text-lightpink focus:ring-lightpink"
@@ -362,40 +396,41 @@ export default function Cart() {
                             <span className="text-gray-700">{coupon.code}</span>
                           </div>
                           <span className="text-sm text-green-700">
-                            Save ₹{Number(coupon.discountAmount || 0).toFixed(2)}
+                            Save ₹
+                            {(Number.isFinite(Number(coupon.discountAmount))
+                              ? Number(coupon.discountAmount)
+                              : 0
+                            ).toFixed(2)}
                           </span>
                         </label>
                       ))}
                     </div>
                   )}
                 </div>
-
-                {/* Order Summary */}
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-gray-700">
                     <span>Subtotal</span>
-                    <span>₹{subTotal.toFixed(2)}</span>
+                    <span>₹{Number.isFinite(subTotal) ? subTotal.toFixed(2) : "0.00"}</span>
                   </div>
-                  {selectedCoupon && (
+                  {selectedCoupon && Number.isFinite(Number(selectedCoupon.discountAmount)) && (
                     <div className="flex justify-between text-green-700">
                       <span>Coupon ({selectedCoupon.code})</span>
-                      <span>-₹{Number(selectedCoupon.discountAmount || 0).toFixed(2)}</span>
+                      <span>-₹{(Number(selectedCoupon.discountAmount) || 0).toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-semibold text-gray-800 mt-2">
                     <span>Total</span>
-                    <span>₹{totalAmount.toFixed(2)}</span>
+                    <span>₹{Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : "0.00"}</span>
                   </div>
                 </div>
               </div>
-
               <div className="mt-6">
                 <button
                   onClick={handlePlaceOrder}
                   className="w-full py-2 bg-lightpink text-white font-bold rounded-xl hover:bg-pink-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  disabled={addressesLoading || (orderType === "DELIVERY" && addresses.length === 0) || subTotal <= 0}
+                  disabled={addressesLoading || (orderType === "DELIVERY" && addresses.length === 0) || subTotal <= 0 || !Number.isFinite(totalAmount) || cartLoading || isUpdating}
                 >
-                  Place Order ₹{totalAmount.toFixed(2)}
+                  Place Order ₹{Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : "0.00"}
                 </button>
               </div>
             </motion.div>

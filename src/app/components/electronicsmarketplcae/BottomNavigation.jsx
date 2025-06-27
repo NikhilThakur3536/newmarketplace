@@ -1,16 +1,18 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Grid3X3, Heart, User } from "lucide-react";
-
+import { Home, Heart, User, ShoppingCart, ClipboardList } from "lucide-react";
+import { useCart } from "@/app/context/CartContext";
 export default function BottomNavigation() {
   const router = useRouter();
   const pathname = usePathname();
+  const { cartCount } = useCart();
 
   const navItems = [
     { icon: Home, label: "Home", path: "/electronicsmarketplace" },
-    { icon: Grid3X3, label: "Categories", path: "/electronicsmarketplace/categories" },
-    { icon: Heart, label: "Favorites", path: "/electronicsmarketplace/favorites" },
+    { icon: ClipboardList, label: "Orders", path: "/electronicsmarketplace/order" },
+    { icon: ShoppingCart, label: "Cart", path: "/electronicsmarketplace/cart" },
+    { icon: Heart, label: "Favorites", path: "/electronicsmarketplace/favorite" },
     { icon: User, label: "Profile", path: "/electronicsmarketplace/profile" },
   ];
 
@@ -19,15 +21,25 @@ export default function BottomNavigation() {
       <div className="flex justify-around">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = pathname === path;
+          const isCart = label === "Cart";
+
           return (
             <button
               key={label}
               onClick={() => router.push(path)}
-              className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
+              className={`relative flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
                 isActive ? "text-blue-500" : "text-gray-500"
               }`}
             >
               <Icon className={`w-6 h-6 mb-1 ${isActive ? "fill-blue-500" : ""}`} />
+
+              {/* Show cart count if label is Cart and count > 0 */}
+              {isCart && cartCount > 0 && (
+                <span className="absolute -top-1.5 right-1 bg-red-500 text-white text-xs font-semibold rounded-full px-1.5">
+                  {cartCount}
+                </span>
+              )}
+
               <span className="text-xs">{label}</span>
             </button>
           );
