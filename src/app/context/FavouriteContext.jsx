@@ -112,7 +112,7 @@ export const FavoriteProvider = ({ children }) => {
         <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           {name} removed from favorites!
         </div>,
-        { id: "quantity-toast", duration: 300 }
+        { id: "quantity-toast", duration: 200 }
         ); 
         } else {
         const response = await axios.post(
@@ -128,9 +128,9 @@ export const FavoriteProvider = ({ children }) => {
         console.log("Add Favorite Response:", response.data);
         toast.custom(
         <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          {name}adde to favorites!
+          {name}added to favorites!
         </div>,
-        { id: "quantity-toast", duration: 300 }
+        { id: "quantity-toast", duration: 200 }
         )
       }
 
@@ -141,7 +141,7 @@ export const FavoriteProvider = ({ children }) => {
         type: "error",
         message: error.response?.data?.message || "Failed to update favorites.",
       });
-      setTimeout(() => setShowPopup(null), 300);
+      setTimeout(() => setShowPopup(null), 200);
     }
   };
 

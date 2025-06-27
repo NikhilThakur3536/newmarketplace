@@ -5,8 +5,10 @@ import { ChevronLeft, Plus } from "lucide-react";
 import { useState } from "react";
 import { useCustomerAddresses } from "@/app/context/CustomerAddressContext";
 import { useCart } from "@/app/context/CartContext";
+import { useRouter } from "next/navigation";
 
 export default function Address() {
+  const router = useRouter()
   const { addOrEditAddress } = useCustomerAddresses(); 
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({});
@@ -33,7 +35,7 @@ export default function Address() {
       <div className="max-w-md w-full flex flex-col gap-4 relative bg-white ">
         {/* Header */}
         <div className="w-full px-4 flex gap-4 py-3 bg-lightpink items-center">
-          <ChevronLeft size={20} strokeWidth={3} className="text-white" />
+          <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={()=>router.push("/foodmarketplace")}/>
           <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
             Choose Delivery Address
           </span>
@@ -122,7 +124,7 @@ export default function Address() {
         </div>
 
         {/* Address Cards */}
-        <div className="w-full px-4 flex flex-col gap-2 items-center ">
+        <div className="w-full px-4 flex flex-col gap-2 items-center mb-12">
           <AddressCard />
         </div>
       </div>
