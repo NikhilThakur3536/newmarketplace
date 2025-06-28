@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const languageId = "2bfa9d89-61c4-401e-aae3-346627460558";
 
-const ChatInterface = ({ onClose, productId, varientId, inventoryId }) => {
+const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage,productName,productDescription,productSeller}) => {
   const { chatId, messages, isSending, isChatLoading, chatError, sendMessage, fetchMessages, deleteMessage, participantId } = useChat();
   const [newMessage, setNewMessage] = useState('');
   const [proposedPrice, setProposedPrice] = useState('');
@@ -83,35 +83,52 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId }) => {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         {/* Header */}
-        <div className="bg-white/95 p-4 border-b border-gray-100/50 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <motion.div
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center"
-                whileHover={{ scale: 1.1 }}
-              >
-                <span className="text-sm font-semibold text-white">S</span>
-              </motion.div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse" />
+        <div className="bg-white/95 p-4 border-b border-gray-100/50 flex flex-col space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <motion.div
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <span className="text-sm font-semibold text-white">S</span>
+                </motion.div>
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse" />
+              </div>
+              <div>
+                <h2 className="text-base font-medium text-gray-800">{productSeller}</h2>
+                <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                  Online
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+            >
+              Close
+            </button>
+          </div>
+          <div className="bg-green-600 border border-gray-100/50 rounded-lg p-3 flex items-center gap-3">
+            <div className="relative w-20 h-12">
+              <Image
+                src={productImage || "/placeholder.jpg"}
+                alt={productName || "Product"}
+                fill
+                className="object-cover rounded-md"
+              />  
             </div>
             <div>
-              <h2 className="text-base font-medium text-gray-800">Seller</h2>
-              <p className="text-xs text-gray-500 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                Online
-              </p>
+              <p className="text-sm font-medium text-white line-clamp-2">{productName || "Unnamed Product"}</p>
+              <p className="text-xs text-white line-clamp-1">{productDescription}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
-          >
-            Close
-          </button>
         </div>
 
         {/* Messages Area */}
         <div className="h-[20rem] overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50/50 to-white/50 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+         
           {isChatLoading ? (
             <div className="text-center text-gray-400 text-sm">Loading messages...</div>
           ) : chatError ? (
@@ -381,6 +398,7 @@ export default function ProductDetailPage() {
               image: prod.productImages?.[0]?.url || "/placeholder.jpg",
               brand: prod.manufacturer?.name || "Unknown",
               storeId: prod.store?.id || null,
+              sellerName:prod.store?.name,
               category: prod.category?.categoryLanguages?.[0]?.name || "General",
               categoryId: prod.category?.id || null,
               rating: prod.rating || 4,
@@ -668,7 +686,16 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {showChat && product && <ChatInterface onClose={handleCloseChat} productId={product.id} variantId={product.varientId} inventoryId={product.inventoryId}/>}
+      {showChat && product && <ChatInterface 
+        onClose={handleCloseChat} 
+        productId={product.id} 
+        variantId={product.varientId} 
+        inventoryId={product.inventoryId} 
+        productName={product.name} 
+        productImage={product.image}
+        productDescription={product.longDescription}
+        productSeller={product.sellerName}
+      />}
     </div>
   );
 }
