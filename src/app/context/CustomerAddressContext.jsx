@@ -25,7 +25,7 @@ export function CustomerAddressProvider({ children }) {
           },
         }
       );
-      console.log(response.data.data.rows)
+      // console.log(response.data.data.rows)
       setAddresses(response.data.data.rows || []);
     } catch (error) {
       console.error("Error fetching customer addresses:", error);

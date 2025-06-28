@@ -2,7 +2,6 @@
 
 import FoodNavBar from "@/app/components/foodmarketplace/NavBar"
 import ProfileTabs from "@/app/components/foodmarketplace/ProfileTabs"
-import Image from "next/image"
 
 export default function Profile () {
     return(

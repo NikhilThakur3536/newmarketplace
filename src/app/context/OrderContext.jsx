@@ -77,11 +77,11 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
         { languageId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log(`Orders response for ${marketplace}:`, response.data);
+      // console.log(`Orders response for ${marketplace}:`, response.data);
       
       if (response.data.success) {
         const formatted = normalizeOrders(response.data.data);
-        console.log("formatted", formatted);
+        // console.log("formatted", formatted);
         setOrders(formatted);
       } else {
         setError("Failed to fetch orders");
@@ -94,7 +94,7 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
     } finally {
       setLoading(false);
     }
-    console.log("contextorder", orders);
+    // console.log("contextorder", orders);
   }, 300);
 
   const placeOrder = async (subTotal, customerAddressId, couponCode, couponAmount, totalAmount, orderType) => {
@@ -123,17 +123,17 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
       payload.couponAmount = Number(couponAmount);
     }
 
-    console.log("placeOrder payload:", payload);
-    console.log("Type of totalAmount:", typeof payload.totalAmount, payload.totalAmount);
-    console.log("Type of subTotal:", typeof payload.subTotal, payload.subTotal);
-    console.log("Type of couponAmount:", typeof payload.couponAmount, payload.couponAmount);
+    // console.log("placeOrder payload:", payload);
+    // console.log("Type of totalAmount:", typeof payload.totalAmount, payload.totalAmount);
+    // console.log("Type of subTotal:", typeof payload.subTotal, payload.subTotal);
+    // console.log("Type of couponAmount:", typeof payload.couponAmount, payload.couponAmount);
 
     try {
       const response = await axios.post(`${BASE_URL}${orderEndpoints.add}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("API response:", response.data);
+      // console.log("API response:", response.data);
 
       if (response.data.success) {
         toast.custom(

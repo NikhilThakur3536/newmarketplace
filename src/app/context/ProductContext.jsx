@@ -90,7 +90,7 @@ export const ProductProvider = ({ children }) => {
       });
 
       const data = await res.json();
-      console.log("products",data)
+      // console.log("products",data)
       if (data.success) {
         setProducts(
           data.data.rows.map((product) => ({

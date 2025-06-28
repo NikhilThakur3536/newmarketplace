@@ -387,7 +387,7 @@ export default function ProductDetailPage() {
       let prod = null;
       try {
         const response = await axios.post(url, body, { headers });
-        console.log(response.data.data?.rows)
+        // console.log(response.data.data?.rows)
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           prod = response.data.data.rows.find((p) => p.id === id);
           if (prod) {
@@ -425,7 +425,7 @@ export default function ProductDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    console.log("product details", product);
+    // console.log("product details", product);
   });
 
   useEffect(() => {
@@ -524,7 +524,7 @@ export default function ProductDetailPage() {
       
       setQuantity(1);
     } catch (err) {
-      console.log(err)
+      // console.log(err)
     }
   };
 

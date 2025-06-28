@@ -21,7 +21,7 @@ export const CouponProvider = ({ children }) => {
     }
 
     const token = localStorage.getItem("token");
-    console.log("Token:", token); // Debug token
+    // console.log("Token:", token); // Debug token
     if (!token || totalAmount <= 0) {
       setCoupons([]);
       setError(totalAmount <= 0 ? "Invalid cart amount" : "Authentication token not found. Please log in.");
@@ -38,7 +38,7 @@ export const CouponProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching coupons with totalAmount:", Number(totalAmount).toFixed(2)); // Debug request
+      // console.log("Fetching coupons with totalAmount:", Number(totalAmount).toFixed(2)); // Debug request
       const response = await axios.post(
         `${BASE_URL}/user/coupon/list`,
         {
@@ -53,7 +53,7 @@ export const CouponProvider = ({ children }) => {
           },
         }
       );
-      console.log("Coupon API response:", response.data); // Debug response
+      // console.log("Coupon API response:", response.data); // Debug response
       const couponList = response.data.data?.rows || [];
       const filteredCoupons = couponList
         .filter((coupon) => coupon.isEligible && totalAmount >= (coupon.minPurchaseAmount || 0))

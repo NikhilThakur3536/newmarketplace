@@ -65,14 +65,14 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
           return;
         }
 
-        console.log(`Calling fetchCartItems for ${marketplace}`); 
+        // console.log(`Calling fetchCartItems for ${marketplace}`); 
         const response = await axios.post(
           `${baseUrl}${cartEndpoints.list}`,
           { languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558" },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        console.log(`Cart response for ${marketplace}:`, response.data);
+        // console.log(`Cart response for ${marketplace}:`, response.data);
 
         const items = response.data?.data?.rows || [];
         if (!Array.isArray(items)) {
@@ -91,7 +91,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         );
 
         if (cartHash === lastCartHash) {
-          console.log(`No changes in ${marketplace} cart, skipping update`);
+          // console.log(`No changes in ${marketplace} cart, skipping update`);
           return;
         }
 

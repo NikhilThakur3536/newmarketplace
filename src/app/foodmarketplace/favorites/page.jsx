@@ -11,17 +11,17 @@ export default function Favorite() {
   const { favoriteItems, fetchFavorites, loading, showPopup } = useFavorite();
 
   useEffect(() => {
-    console.log("Fetching favorites...");
+    // console.log("Fetching favorites...");
     fetchFavorites();
   }, []);
 
   useEffect(() => {
-    console.log("Favorite Items in Favorite Component:", favoriteItems);
+    // console.log("Favorite Items in Favorite Component:", favoriteItems);
   }, [favoriteItems]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("Token in Favorite Component:", token);
+    // console.log("Token in Favorite Component:", token);
   }, []);
 
   const handleAddItemClick = () => {
@@ -62,7 +62,7 @@ export default function Favorite() {
           ) : (
             <div className="space-y-4">
               {favoriteItems.map((item) => {
-                console.log("Rendering Item:", item);
+                // console.log("Rendering Item:", item);
                 return <FoodItemCard key={item.id} item={item} />;
               })}
             </div>

@@ -28,7 +28,7 @@ export function CategoryProvider({ children }) {
             },
           }
         );
-        console.log(response.data.data.rows)
+        // console.log(response.data.data.rows)
         setCategories(response.data.data.rows); 
       } catch (error) {
         console.error("Error fetching categories:", error);

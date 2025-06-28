@@ -62,15 +62,15 @@ export default function RestaurantPage() {
 
         const stores = storeRes.data.data.rows;
 
-        console.log("restaurantName from URL:", restaurantName);
-        console.log("locationName from URL:", locationName);
+        // console.log("restaurantName from URL:", restaurantName);
+        // console.log("locationName from URL:", locationName);
 
         const matchedStore = stores.find((store) => {
           const slugName = store.name.toLowerCase().replace(/\s+/g, "-");
           const slugLocationName = store.location?.name?.toLowerCase().replace(/\s+/g, "-");
           const slugLocationAddress = store.location?.address?.toLowerCase().replace(/,/g, "").replace(/\s+/g, "-");
 
-          console.log("Checking store:", slugName, slugLocationName, slugLocationAddress);
+          // console.log("Checking store:", slugName, slugLocationName, slugLocationAddress);
 
           return (
             slugName === restaurantName.toLowerCase() &&
@@ -113,14 +113,14 @@ export default function RestaurantPage() {
         );
 
         if (res.data.success) {
-          console.log("items structured",res.data.data.rows)
+          // console.log("items structured",res.data.data.rows)
           const structured = formatCategories(res.data.data.rows);
           setCategoriesData(structured);
           const initialExpanded = Object.keys(structured).reduce((acc, cat) => {
             acc[cat] = true;
             return acc;
           }, {});
-          console.log("initial expanded",initialExpanded)
+          // console.log("initial expanded",initialExpanded)
           setExpandedCategories(initialExpanded);
         } else {
           console.warn("Failed to fetch products");

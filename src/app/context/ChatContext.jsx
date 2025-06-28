@@ -41,7 +41,7 @@ export function ChatProvider({ children }) {
         },
       });
 
-      console.log("Check Existing Chat Response:", JSON.stringify(response.data, null, 2));
+      // console.log("Check Existing Chat Response:", JSON.stringify(response.data, null, 2));
 
       if (response.data.success && Array.isArray(response.data.data) && response.data.data.length > 0) {
         const existingChat = response.data.data.find(
@@ -54,15 +54,15 @@ export function ChatProvider({ children }) {
 
         if (existingChat) {
           const chatProductId = existingChat.chatProducts?.[0]?.id || null;
-          console.log("Found existing chat with ID:", existingChat.id, "and chatProductId:", chatProductId, "for productId:", productId);
+          // console.log("Found existing chat with ID:", existingChat.id, "and chatProductId:", chatProductId, "for productId:", productId);
           return { chatId: existingChat.id, chatProductId };
         } else {
-          console.log("No matching chat found for productId:", productId);
+          // console.log("No matching chat found for productId:", productId);
           setChatError("No matching chat found for this product");
           return { chatId: null, chatProductId: null };
         }
       } else {
-        console.log("No chats found or API call unsuccessful:", response.data);
+        // console.log("No chats found or API call unsuccessful:", response.data);
         setChatError("No existing chats found");
         return { chatId: null, chatProductId: null };
       }
@@ -106,17 +106,17 @@ export function ChatProvider({ children }) {
           }
         );
 
-        console.log("Fetch Messages API Response:", JSON.stringify(response.data, null, 2));
+        // console.log("Fetch Messages API Response:", JSON.stringify(response.data, null, 2));
 
         if (response.data.success) {
           const messagesData = Array.isArray(response.data.data)
             ? response.data.data
             : response.data.data?.messages || response.data.data?.results || [];
 
-          console.log("Parsed messagesData:", messagesData);
+          // console.log("Parsed messagesData:", messagesData);
 
           if (messagesData.length === 0) {
-            console.log("No messages found for chatId:", chatId);
+            // console.log("No messages found for chatId:", chatId);
             setMessages([]);
           } else {
             setMessages(
@@ -134,7 +134,7 @@ export function ChatProvider({ children }) {
                   attachments: msg.attachments || [],
                   proposedPrice: msg.proposedPrice || null,
                 };
-                console.log("Mapped message:", mappedMsg);
+                // console.log("Mapped message:", mappedMsg);
                 return mappedMsg;
               })
             );
@@ -168,7 +168,7 @@ export function ChatProvider({ children }) {
     try {
       const { chatId: existingChatId, chatProductId: existingChatProductId } = await checkExistingChat(participantId, productId);
       if (existingChatId) {
-        console.log("Using existing chatId:", existingChatId, "and chatProductId:", existingChatProductId);
+        // console.log("Using existing chatId:", existingChatId, "and chatProductId:", existingChatProductId);
         setChatId(existingChatId);
         setParticipantId(participantId);
         setChatProductId(existingChatProductId);
@@ -176,7 +176,7 @@ export function ChatProvider({ children }) {
         return existingChatId;
       }
 
-      console.log("Creating new chat for participantId:", participantId, "and productId:", productId);
+      // console.log("Creating new chat for participantId:", participantId, "and productId:", productId);
       const token = getToken();
       if (!token) {
         throw new Error("Authentication token missing");
@@ -203,7 +203,7 @@ export function ChatProvider({ children }) {
       if (response.data.success) {
         const newChatId = response.data.data.id;
         const newChatProductId = response.data.data.chatProducts?.[0]?.id || null;
-        console.log("Created new chat with ID:", newChatId, "and chatProductId:", newChatProductId);
+        // console.log("Created new chat with ID:", newChatId, "and chatProductId:", newChatProductId);
         setChatId(newChatId);
         setParticipantId(participantId);
         setChatProductId(newChatProductId);
@@ -215,7 +215,7 @@ export function ChatProvider({ children }) {
     } catch (err) {
       if (err.response?.data?.error === "Chat already exists" && err.response?.data?.existingChatId) {
         const existingChatId = err.response.data.existingChatId;
-        console.log("Chat already exists, using existingChatId:", existingChatId);
+        // console.log("Chat already exists, using existingChatId:", existingChatId);
         setChatId(existingChatId);
         setParticipantId(participantId);
         // Fetch chat details to get chatProductId

@@ -20,9 +20,9 @@ export const FavoriteProvider = ({ children }) => {
   const fetchFavorites = async () => {
     const token = localStorage.getItem("token");
     const lang = localStorage.getItem("selectedLanguage")
-    console.log("Token:", token);
+    // console.log("Token:", token);
     if (!token) {
-      console.log("No token, redirecting to login");
+      // console.log("No token, redirecting to login");
       setShowPopup({
         type: "error",
         message: "Please log in to view your favorites.", 
@@ -37,14 +37,14 @@ export const FavoriteProvider = ({ children }) => {
     setLoading(true);
     try {
       const payload = { languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558" };
-      console.log("Fetching favorites with payload:", payload);
+      // console.log("Fetching favorites with payload:", payload);
       const response = await axios.post(`${BASE_URL}/user/favoriteProduct/listv1`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      console.log("API Response:", response.data);
+      // console.log("API Response:", response.data);
 
       const items = response.data?.data?.rows?.map((item) => ({
         id: item.id || item.productId || "unknown-id",
@@ -58,7 +58,7 @@ export const FavoriteProvider = ({ children }) => {
         media: item.media || [{ url: "/placeholder.jpg" }],
         addons: item.addons || [],
       })) || [];
-      console.log("Mapped Items:", items);
+      // console.log("Mapped Items:", items);
 
       setFavoriteItems(items);
     } catch (error) {
@@ -78,7 +78,7 @@ export const FavoriteProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log("Updated favoriteItems:", favoriteItems);
+    // console.log("Updated favoriteItems:", favoriteItems);
   }, [favoriteItems]);
 
   const toggleFavorite = async ({ productId, productVarientUomId, name, isFavorite }) => {
@@ -108,7 +108,7 @@ export const FavoriteProvider = ({ children }) => {
             },
           }
         );
-        console.log("Remove Favorite Response:", response.data);
+        // console.log("Remove Favorite Response:", response.data);
         toast.custom(
         <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           {name} removed from favorites!
@@ -126,7 +126,7 @@ export const FavoriteProvider = ({ children }) => {
             },
           }
         );
-        console.log("Add Favorite Response:", response.data);
+        // console.log("Add Favorite Response:", response.data);
         toast.custom(
         <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           {name}added to favorites!
