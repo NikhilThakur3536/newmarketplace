@@ -25,12 +25,20 @@ export default function HomePage() {
     totalCount,
     loading,
     error,
+    setLanguage
   } = useProduct();
 
   const { favoriteItems, toggleFavorite } = useFavorite();
   const { languages, loading: languageLoading, error: languageError } = useLanguage(); // Access language context
   const router = useRouter();
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false); // State for dropdown
+
+  
+  const handleLanguageSelect = (language) => {
+    localStorage.setItem("selectedLanguage", language.id);
+    setLanguage(language.id); // Update language state in ProductContext
+    setIsLanguageDropdownOpen(false); // Close dropdown
+  };
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -70,23 +78,8 @@ export default function HomePage() {
       name,
       isFavorite,
     });
-
-    toast.custom(
-      <div
-        className={`px-4 py-2 rounded-lg shadow-md font-semibold text-white ${
-          isFavorite ? "bg-red-600" : "bg-green-600"
-        }`}
-      >
-        {isFavorite ? `${name} removed from favorites` : `${name} added to favorites`}
-      </div>
-    );
   };
 
-  // Function to handle language selection
-  const handleLanguageSelect = (language) => {
-    localStorage.setItem("selectedLanguage", language.id);
-    setIsLanguageDropdownOpen(false); // Close dropdown
-  };
 
   return (
     <div className="bg-gray-50 min-h-screen">

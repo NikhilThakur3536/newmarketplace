@@ -19,13 +19,12 @@ export const FavoriteProvider = ({ children }) => {
 
   const fetchFavorites = async () => {
     const token = localStorage.getItem("token");
-    const lang = localStorage.getItem("selectedLanguage")
-    // console.log("Token:", token);
+    const lang = localStorage.getItem("selectedLanguage");
     if (!token) {
-      // console.log("No token, redirecting to login");
+      console.log("No token, redirecting to login");
       setShowPopup({
         type: "error",
-        message: "Please log in to view your favorites.", 
+        message: "Please log in to view your favorites.",
       });
       setTimeout(() => {
         setShowPopup(null);
@@ -37,14 +36,12 @@ export const FavoriteProvider = ({ children }) => {
     setLoading(true);
     try {
       const payload = { languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558" };
-      // console.log("Fetching favorites with payload:", payload);
       const response = await axios.post(`${BASE_URL}/user/favoriteProduct/listv1`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      // console.log("API Response:", response.data);
 
       const items = response.data?.data?.rows?.map((item) => ({
         id: item.id || item.productId || "unknown-id",
@@ -58,7 +55,6 @@ export const FavoriteProvider = ({ children }) => {
         media: item.media || [{ url: "/placeholder.jpg" }],
         addons: item.addons || [],
       })) || [];
-      // console.log("Mapped Items:", items);
 
       setFavoriteItems(items);
     } catch (error) {
@@ -77,11 +73,12 @@ export const FavoriteProvider = ({ children }) => {
     fetchFavorites();
   }, []);
 
-  useEffect(() => {
-    // console.log("Updated favoriteItems:", favoriteItems);
-  }, [favoriteItems]);
+  // Helper function to check if a product is in favorites
+  const isFavorite = (productId) => {
+    return favoriteItems.some((item) => item.id === productId);
+  };
 
-  const toggleFavorite = async ({ productId, productVarientUomId, name, isFavorite }) => {
+  const toggleFavorite = async ({ productId, productVarientUomId, name }) => {
     const token = localStorage.getItem("token");
     if (!token) {
       localStorage.setItem("redirectUrl", "/foodmarketplace/login");
@@ -97,7 +94,8 @@ export const FavoriteProvider = ({ children }) => {
     }
 
     try {
-      if (isFavorite) {
+      const isCurrentlyFavorite = isFavorite(productId);
+      if (isCurrentlyFavorite) {
         const response = await axios.post(
           `${BASE_URL}/user/favoriteProduct/remove`,
           { productId },
@@ -108,14 +106,13 @@ export const FavoriteProvider = ({ children }) => {
             },
           }
         );
-        // console.log("Remove Favorite Response:", response.data);
         toast.custom(
-        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          {name} removed from favorites!
-        </div>,
-        { id: "quantity-toast", duration: 200 }
-        ); 
-        } else {
+          <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+            {name} removed from favorites!
+          </div>,
+          { id: "quantity-toast", duration: 200 }
+        );
+      } else {
         const response = await axios.post(
           `${BASE_URL}/user/favoriteProduct/add`,
           { productId, productVarientUomId },
@@ -126,15 +123,15 @@ export const FavoriteProvider = ({ children }) => {
             },
           }
         );
-        // console.log("Add Favorite Response:", response.data);
         toast.custom(
-        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          {name}added to favorites!
-        </div>,
-        { id: "quantity-toast", duration: 200 }
-        )
+          <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+            {name} added to favorites!
+          </div>,
+          { id: "quantity-toast", duration: 200 }
+        );
       }
 
+      // Refresh the favorites list after toggling
       fetchFavorites();
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -148,7 +145,7 @@ export const FavoriteProvider = ({ children }) => {
 
   return (
     <FavoriteContext.Provider
-      value={{ favoriteItems, fetchFavorites, toggleFavorite, loading, showPopup }}
+      value={{ favoriteItems, fetchFavorites, toggleFavorite, isFavorite, loading, showPopup }}
     >
       {children}
     </FavoriteContext.Provider>

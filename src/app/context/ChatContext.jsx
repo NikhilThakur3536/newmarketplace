@@ -366,7 +366,6 @@ export function ChatProvider({ children }) {
   }, []);
 
   const clearChat = useCallback(() => {
-    console.log("Clearing chat state");
     setChatId(null);
     setParticipantId(null);
     setChatProductId(null);

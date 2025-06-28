@@ -17,37 +17,26 @@ export const ProductProvider = ({ children }) => {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [language, setLanguage] = useState(
+    typeof window !== "undefined"
+      ? localStorage.getItem("selectedLanguage") || "2bfa9d89-61c4-401e-aae3-346627460558"
+      : "2bfa9d89-61c4-401e-aae3-346627460558"
+  );
 
-  const languageId = "2bfa9d89-61c4-401e-aae3-346627460558";
-
-  // 🔐 Read token for secure APIs
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return {
       "Content-Type": "application/json",
-      ...(token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   };
 
-  const getLang = () => {
-    if(typeof window !== "undefined"){
-      return localStorage.getItem("selectedLanguage")
-    }
-  }
-
-  const lang=getLang()
-
   const fetchCategories = async () => {
-  
     try {
       const res = await fetch(`${BASE_URL}/user/category/list`, {
         method: "POST",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ limit: 20, offset: 0, languageId:lang || languageId }),
+        body: JSON.stringify({ limit: 20, offset: 0, languageId: language }),
       });
       const data = await res.json();
       if (data.success) {
@@ -72,7 +61,7 @@ export const ProductProvider = ({ children }) => {
       const body = {
         limit,
         offset,
-        languageId: lang || languageId,
+        languageId: language,
       };
 
       if (categoryIds && categoryIds.length > 0) {
@@ -90,7 +79,6 @@ export const ProductProvider = ({ children }) => {
       });
 
       const data = await res.json();
-      // console.log("products",data)
       if (data.success) {
         setProducts(
           data.data.rows.map((product) => ({
@@ -99,7 +87,7 @@ export const ProductProvider = ({ children }) => {
             price: product.varients?.[0]?.inventory?.price || 0,
             image: product.productImages[0]?.url || "/placeholder.svg",
             categoryId: product.categoryId,
-            productVarientUomId: product.varients?.[0]?.id
+            productVarientUomId: product.varients?.[0]?.id,
           }))
         );
         setTotalCount(data.data.count || 0);
@@ -113,14 +101,31 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
+  // Watch for language changes
   useEffect(() => {
     fetchCategories();
-    fetchProducts([], ""); 
-  }, []);
+    fetchProducts();
+  }, [language]);
 
+  // Also refetch on other triggers
   useEffect(() => {
     fetchProducts(selectedCategories, searchKey, page);
   }, [page, searchKey, selectedCategories]);
+
+  // Listen to localStorage changes (e.g., another tab changed language)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newLang = localStorage.getItem("selectedLanguage");
+      if (newLang && newLang !== language) {
+        setLanguage(newLang);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [language]);
 
   return (
     <ProductContext.Provider
@@ -138,6 +143,8 @@ export const ProductProvider = ({ children }) => {
         totalCount,
         loading,
         error,
+        language,
+        setLanguage, // Expose this so you can change language manually
       }}
     >
       {children}
