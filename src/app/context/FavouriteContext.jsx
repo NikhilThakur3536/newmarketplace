@@ -19,6 +19,7 @@ export const FavoriteProvider = ({ children }) => {
 
   const fetchFavorites = async () => {
     const token = localStorage.getItem("token");
+    const lang = localStorage.getItem("selectedLanguage")
     console.log("Token:", token);
     if (!token) {
       console.log("No token, redirecting to login");
@@ -35,7 +36,7 @@ export const FavoriteProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const payload = { languageId: "2bfa9d89-61c4-401e-aae3-346627460558" };
+      const payload = { languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558" };
       console.log("Fetching favorites with payload:", payload);
       const response = await axios.post(`${BASE_URL}/user/favoriteProduct/listv1`, payload, {
         headers: {

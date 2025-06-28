@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useProduct } from "../context/ProductContext";
 import { useFavorite } from "../context/FavouriteContext";
+import { useLanguage } from "../context/LanguageContext"; // Import useLanguage hook
 import { useRouter } from "next/navigation";
-import { Menu, User, Search, Heart } from "lucide-react";
+import { Menu, User, Search, Heart, Globe } from "lucide-react"; // Add Globe icon
 import FilterModal from "../components/electronicsmarketplcae/FilterModal";
 import BottomNavigation from "../components/electronicsmarketplcae/BottomNavigation";
 import toast from "react-hot-toast";
@@ -27,7 +28,9 @@ export default function HomePage() {
   } = useProduct();
 
   const { favoriteItems, toggleFavorite } = useFavorite();
+  const { languages, loading: languageLoading, error: languageError } = useLanguage(); // Access language context
   const router = useRouter();
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false); // State for dropdown
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -79,6 +82,12 @@ export default function HomePage() {
     );
   };
 
+  // Function to handle language selection
+  const handleLanguageSelect = (language) => {
+    localStorage.setItem("selectedLanguage", language.id);
+    setIsLanguageDropdownOpen(false); // Close dropdown
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="relative max-w-md mx-auto">
@@ -92,8 +101,41 @@ export default function HomePage() {
                 <p className="font-semibold text-lg">Electronics Store</p>
               </div>
             </div>
-            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-orange-600" />
+            <div className="flex items-center gap-3">
+              {/* Globe Icon for Language Selection */}
+              <div className="relative">
+                <Globe
+                  className="w-5 h-5 text-orange-600 cursor-pointer"
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                />
+                {/* Language Dropdown */}
+                {isLanguageDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    {languageLoading ? (
+                      <div className="p-2 text-center text-gray-500">Loading...</div>
+                    ) : languageError ? (
+                      <div className="p-2 text-center text-red-500">{languageError}</div>
+                    ) : languages.length > 0 ? (
+                      <ul className="py-1">
+                        {languages.map((language) => (
+                          <li
+                            key={language.id} // Assuming language has an 'id' field
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-700"
+                            onClick={() => handleLanguageSelect(language)}
+                          >
+                            {language.name} {/* Adjust based on your language object structure */}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-2 text-center text-gray-500">No languages available</div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-orange-600" />
+              </div>
             </div>
           </div>
           {/* Search */}

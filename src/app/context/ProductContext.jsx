@@ -33,12 +33,21 @@ export const ProductProvider = ({ children }) => {
     };
   };
 
+  const getLang = () => {
+    if(typeof window !== "undefined"){
+      return localStorage.getItem("selectedLanguage")
+    }
+  }
+
+  const lang=getLang()
+
   const fetchCategories = async () => {
+  
     try {
       const res = await fetch(`${BASE_URL}/user/category/list`, {
         method: "POST",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ limit: 20, offset: 0, languageId }),
+        body: JSON.stringify({ limit: 20, offset: 0, languageId:lang || languageId }),
       });
       const data = await res.json();
       if (data.success) {
@@ -63,7 +72,7 @@ export const ProductProvider = ({ children }) => {
       const body = {
         limit,
         offset,
-        languageId,
+        languageId: lang || languageId,
       };
 
       if (categoryIds && categoryIds.length > 0) {

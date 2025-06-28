@@ -45,11 +45,18 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
     return null;
   };
 
+  const getLang = () => {
+    if(typeof window !== "undefined"){
+      return localStorage.getItem("selectedLanguage")
+    }
+  }
+
   const fetchCartItems = useCallback(
     debounce(async () => {
       try {
         setIsLoading(true);
         const token = getToken();
+        const lang = getLang();
         if (!token) {
           console.warn(`No token found for ${marketplace} cart`);
           setCartItems([]);
@@ -61,7 +68,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         console.log(`Calling fetchCartItems for ${marketplace}`); 
         const response = await axios.post(
           `${baseUrl}${cartEndpoints.list}`,
-          { languageId: "2bfa9d89-61c4-401e-aae3-346627460558" },
+          { languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558" },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -111,7 +118,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         setIsLoading(false);
       }
     }, 300),
-    [cartEndpoints, marketplace, lastCartHash]
+    [cartEndpoints, marketplace, lastCartHash,]
   );
 
   const addToCart = async (payload) => {

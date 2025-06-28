@@ -46,6 +46,7 @@ export default function RestaurantPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const lang= localStorage.getItem("selectedLanguage")
 
     async function fetchMenu() {
       try {
@@ -93,7 +94,7 @@ export default function RestaurantPage() {
           limit: 4000,
           offset: 0,
           storeId,
-          languageId: "2bfa9d89-61c4-401e-aae3-346627460558",
+          languageId: lang,
         };
 
         // Only include searchKey if searchQuery is not empty
