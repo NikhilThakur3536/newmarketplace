@@ -94,7 +94,7 @@ export default function RestaurantPage() {
           limit: 4000,
           offset: 0,
           storeId,
-          languageId: lang,
+          languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558",
         };
 
         // Only include searchKey if searchQuery is not empty

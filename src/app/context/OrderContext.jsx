@@ -37,6 +37,13 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
     return null;
   };
 
+  const getLang = () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("selectedLanguage");
+    }
+    return null;
+  };
+
   const normalizeOrders = (data) => {
     return data?.rows?.map((order) => ({
       id: order.id,
@@ -70,11 +77,13 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
       return;
     }
 
+    const lang = getLang()
+
     setLoading(true);
     try {
       const response = await axios.post(
         `${BASE_URL}${orderEndpoints.list}`,
-        { languageId },
+        { languageId: lang || languageId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // console.log(`Orders response for ${marketplace}:`, response.data);

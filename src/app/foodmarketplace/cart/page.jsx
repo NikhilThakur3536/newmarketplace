@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { debounce } from "lodash";
 import { motion, AnimatePresence } from "framer-motion";
-import FoodNavBar from "@/app/components/foodmarketplace/NavBar";
 
 export default function Cart() {
   const { cartItems, removeFromCart, updateCartQuantity, fetchCartItems, isLoading: cartLoading } = useCart();

@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Timer } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 // Helper function to slugify text

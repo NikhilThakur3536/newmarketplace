@@ -11,7 +11,6 @@ export default function StoreList({ searchQuery }) {
   const [stores, setStores] = useState([]);
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-  // 🛠 Properly format time-only strings by adding dummy date
   const formatStoreTiming = (openingTime, closingTime) => {
     if (!openingTime || !closingTime) return "Timing not available";
 
@@ -30,14 +29,12 @@ export default function StoreList({ searchQuery }) {
       if (!selectedLocation?.id) return;
 
       try {
-        // Build payload conditionally
         const payload = {
           limit: 4,
           offset: 0,
           locationId: selectedLocation.id,
         };
 
-        // Only include searchKey if searchQuery is not empty
         if (searchQuery.trim() !== "") {
           payload.searchKey = searchQuery;
         }
