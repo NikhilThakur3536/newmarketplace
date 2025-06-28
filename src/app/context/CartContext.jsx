@@ -34,7 +34,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
   const [cartCount, setCartCount] = useState(0);
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastCartHash, setLastCartHash] = useState(null); // Track cart state
+  const [lastCartHash, setLastCartHash] = useState(null); 
   const pathname = usePathname();
   const cartEndpoints = apiMap[marketplace];
 
@@ -58,7 +58,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
           return;
         }
 
-        console.log(`Calling fetchCartItems for ${marketplace}`); // Debug
+        console.log(`Calling fetchCartItems for ${marketplace}`); 
         const response = await axios.post(
           `${baseUrl}${cartEndpoints.list}`,
           { languageId: "2bfa9d89-61c4-401e-aae3-346627460558" },
@@ -75,8 +75,6 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
           localStorage.setItem(`cartCount_${marketplace}`, "0");
           return;
         }
-
-        // Create a hash to detect changes
         const cartHash = JSON.stringify(
           items.map((item) => ({
             id: item.id,
@@ -97,7 +95,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
 
         setCartItems(items);
         setCartCount(total);
-        setLastCartHash(cartHash); // Update hash
+        setLastCartHash(cartHash); 
         localStorage.setItem(`cartCount_${marketplace}`, total.toString());
         window.dispatchEvent(new CustomEvent("cart-updated", { detail: { marketplace } }));
       } catch (error) {
@@ -197,7 +195,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
   const clearCart = () => {
     setCartItems([]);
     setCartCount(0);
-    setLastCartHash(null); // Reset hash
+    setLastCartHash(null); 
     localStorage.setItem(`cartCount_${marketplace}`, "0");
   };
 
