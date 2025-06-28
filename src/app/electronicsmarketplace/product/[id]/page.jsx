@@ -503,20 +503,10 @@ export default function ProductDetailPage() {
         varientId: varientId,
       };
       await addToCart(payload);
-      toast.custom(
-        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          {`Added ${qty} of ${product.name} to cart successfully`}
-        </div>,
-        { duration: 2000 }
-      );
+      
       setQuantity(1);
     } catch (err) {
-      toast.custom(
-        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          Failed to add item to cart
-        </div>,
-        { duration: 2000 }
-      );
+      console.log(err)
     }
   };
 
@@ -528,7 +518,7 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between relative">
-        <button onClick={() => router.push("/")}>
+        <button onClick={() => router.push("/electronicsmarketplace")}>
           <ChevronLeft className="w-6 h-6 text-gray-700" />
         </button>
         <h1 className="font-semibold text-lg">Product Details</h1>

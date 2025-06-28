@@ -253,9 +253,6 @@ export default function Cart() {
                       fill
                       className="object-cover rounded-lg"
                     />
-                    <div className="w-fit h-fit p-1 bg-gray-100/40 flex items-center justify-center absolute top-2 right-2 rounded-full">
-                      <Heart color="white" size={20} />
-                    </div>
                   </div>
                 </div>
               ))}

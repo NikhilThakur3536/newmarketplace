@@ -125,11 +125,11 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
 
       await fetchCartItems();
       toast.dismiss("cart-toast")
-      toast.success("Item added to cart",{id:"cart-toast",duration:2800});
+      toast.success("Item added to cart",{id:"cart-toast",duration:300});
     } catch (error) {
       console.error(`Add to cart error for ${marketplace}:`, error);
       toast.dismiss("cart-remove")
-      toast.error("Failed to add to cart",{id:"cart-remove",duration:200});
+      toast.error("Failed to add to cart",{id:"cart-remove",duration:300});
     }
   };
 

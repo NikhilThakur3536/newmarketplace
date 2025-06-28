@@ -2,9 +2,11 @@
 
 import { useOrder } from "@/app/context/OrderContext";
 import { RefreshCw, ShoppingBag, AlertCircle, ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Order({ marketplace }) {
   const { orders, loading, error, fetchOrders } = useOrder();
+  const router = useRouter()
 
   const handleRefresh = async () => {
     await fetchOrders();
@@ -43,7 +45,7 @@ export default function Order({ marketplace }) {
             size={20}
             strokeWidth={3}
             className="cursor-pointer"
-            onClick={() => router.back()}
+            onClick={() => router.push("/electronicsmarketplace")}
           />
           <span className="font-bold text-xl">Orders</span>
         </div>
@@ -85,7 +87,7 @@ export default function Order({ marketplace }) {
                 <div>
                   <p>
                     <span className="font-medium text-gray-800">Invoice:</span>{" "}
-                    {order.invoiceNumber}
+                    {order.tokenNumber}
                   </p>
                   <p>
                     <span className="font-medium text-gray-800">Date:</span>{" "}
@@ -105,7 +107,7 @@ export default function Order({ marketplace }) {
                 <div>
                   <p>
                     <span className="font-medium text-gray-800">Location:</span>{" "}
-                    {order.location}
+                    {order.location},{order.location1},{order.landmark}
                   </p>
                   <p>
                     <span className="font-medium text-gray-800">Order Type:</span>{" "}
@@ -139,6 +141,5 @@ export default function Order({ marketplace }) {
         </div>
       )}
     </div>
-  );                    {order.orderType || "N/A"}
-
+  );                    
 }

@@ -41,13 +41,15 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
     return data?.rows?.map((order) => ({
       id: order.id,
       orderNumber: order.orderNumber,
-      invoiceNumber: order.invoiceNumber,
+      tokenNumber: order.tokenNumber,
       totalAmount: order.totalAmount,
       paymentStatus: order.paymentStatus,
       orderDate: order.orderDate,
       store: order.store?.name || null,
-      location: order.store?.address || "NA",
-      orderType: order.orderType || "no data in response",
+      location: order.customerAddress?.addressLine1 || "NA",
+      location1:order.customerAddress?.addressLine2,
+      landmark:order.customerAddress?.landmark,
+      orderType: order.orderType || "Delivery",
       products: order.orderProducts?.map((p) => ({
         name:
           p.orderProductDetails?.[0]?.name ||
