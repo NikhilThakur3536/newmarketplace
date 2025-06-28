@@ -157,12 +157,10 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           Item removed successfully
         </div>,
-        { id: "remove-toast", duration: 300 }
+        { id: "remove-toast", duration: 250 }
       );
     } catch (error) {
-      console.error(`Remove error for ${marketplace}:`, error);
-      toast.dismiss("remove-error")
-      toast.error("Failed to remove item",{id:"remove-error",duration:300});
+      
     }
   };
 
@@ -194,7 +192,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           Quantity update failed
         </div>,
-        { id: "quantity-toast", duration: 500 }
+        { id: "quantity-toast", duration: 250 }
       );
     }
   };
