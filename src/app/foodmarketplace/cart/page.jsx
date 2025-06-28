@@ -172,7 +172,6 @@ export default function Cart() {
         setSelectedAddressId(null);
         setSelectedCoupon(null);
         setLastFetchedSubTotal(null);
-        router.push("/foodmarketplace/orders");
       } else {
         alert("Failed to place order. Please try again.");
       }
