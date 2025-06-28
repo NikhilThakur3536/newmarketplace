@@ -14,11 +14,13 @@ import toast from "react-hot-toast";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const languageId = "2bfa9d89-61c4-401e-aae3-346627460558";
 
-const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
+const ChatInterface = ({ onClose, productId, varientId, inventoryId }) => {
   const { chatId, messages, isSending, isChatLoading, chatError, sendMessage, fetchMessages, deleteMessage, participantId } = useChat();
   const [newMessage, setNewMessage] = useState('');
   const [proposedPrice, setProposedPrice] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [showOffer, setShowOffer] = useState(false);
+  const [showPropose, setShowPropose] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
       if (success) {
         setNewMessage('');
         setProposedPrice('');
+        setShowPropose(false);
         setTimeout(() => {
           setIsTyping(true);
           setTimeout(() => setIsTyping(false), 2000);
@@ -57,6 +60,11 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
     if (messageId) {
       deleteMessage(messageId);
     }
+  };
+
+  const handlePriceClick = () => {
+    setShowOffer(true);
+    setShowPropose(true);
   };
 
   return (
@@ -103,7 +111,7 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
         </div>
 
         {/* Messages Area */}
-        <div className="h-[28rem] overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50/50 to-white/50 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+        <div className="h-[20rem] overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50/50 to-white/50 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
           {isChatLoading ? (
             <div className="text-center text-gray-400 text-sm">Loading messages...</div>
           ) : chatError ? (
@@ -113,7 +121,7 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
               {messages.map((msg) => (
                 <motion.div
                   key={msg.id}
-                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} group`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
@@ -128,7 +136,7 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
                   >
                     <p className="text-sm leading-relaxed">{msg.text}</p>
                     {msg.proposedPrice && (
-                      <div className="mt-2 bg-yellow-100/20 rounded-md px-2 py-1 text-xs text-yellow-600">
+                      <div className="mt-2 bg-yellow-100/20 rounded-md px-2 py-1 text-xs text-white">
                         Proposed: ${parseFloat(msg.proposedPrice).toFixed(2)}
                       </div>
                     )}
@@ -153,7 +161,7 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
                     {msg.sender === 'user' && (
                       <motion.button
                         onClick={() => handleDeleteMessage(msg.id)}
-                        className="absolute top-2 right-2 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute bottom-2 right-2 text-white hover:text-red-400  transition-opacity"
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}
                       >
@@ -195,29 +203,6 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
         {/* Input Area */}
         <div className="p-4 bg-white/95 border-t border-gray-100/50">
           <div className="space-y-3">
-            {/* Propose Price Section */}
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                value={proposedPrice}
-                onChange={(e) => setProposedPrice(e.target.value)}
-                placeholder="Propose price (e.g., 99.99)"
-                className="flex-1 bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all"
-                min="0"
-                step="0.01"
-                disabled={isSending || !chatId}
-              />
-              <motion.button
-                className="px-3 py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={isSending || !chatId}
-                onClick={() => proposedPrice && handleSendMessage()}
-              >
-                Propose
-              </motion.button>
-            </div>
-
             {/* Message Input */}
             <div className="flex items-center gap-2">
               <button
@@ -234,6 +219,13 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
                 className="flex-1 bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all"
                 disabled={isSending || !chatId}
               />
+              <button
+                onClick={handlePriceClick}
+                className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center text-sm font-medium hover:bg-indigo-600 transition-colors"
+                disabled={isSending || !chatId}
+              >
+                ₹
+              </button>
               <motion.button
                 onClick={handleSendMessage}
                 disabled={(!newMessage.trim() && !proposedPrice) || isSending || !chatId || !productId}
@@ -252,7 +244,88 @@ const ChatInterface = ({ onClose, productId,varientId,inventoryId}) => {
                 )}
               </motion.button>
             </div>
+
+            {/* Propose Price Section (hidden until rupee button is clicked) */}
+            {showPropose && (
+              <div className="flex flex-col gap-2 p-3 bg-white/80 border border-gray-100/50 rounded-lg shadow-sm">
+                <textarea
+                  value={proposedPrice}
+                  onChange={(e) => setProposedPrice(e.target.value)}
+                  placeholder="Enter price (e.g., 99.99)"
+                  className="w-full bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all resize-none h-12"
+                  disabled={isSending || !chatId}
+                />
+                <motion.button
+                  onClick={handleSendMessage}
+                  disabled={(!newMessage.trim() && !proposedPrice) || isSending || !chatId || !productId}
+                  className={`w-full py-2 rounded-lg flex items-center justify-center transition-all ${
+                    (!newMessage.trim() && !proposedPrice) || isSending || !chatId || !productId
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Send Offer
+                </motion.button>
+              </div>
+            )}
           </div>
+
+          {/* Make Offer Popup */}
+          {showOffer && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-60">
+              <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100/50 p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-gray-800">Make Offer</h3>
+                  <button
+                    onClick={() => setShowOffer(false)}
+                    className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="mt-4">
+                  <button
+                    className="w-full py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors mb-2"
+                    onClick={() => {
+                      setProposedPrice('20,200');
+                      setShowOffer(false);
+                    }}
+                  >
+                    ₹ 20,200
+                  </button>
+                  <button
+                    className="w-full py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors mb-2"
+                    onClick={() => {
+                      setProposedPrice('19,100');
+                      setShowOffer(false);
+                    }}
+                  >
+                    ₹ 19,100
+                  </button>
+                  <button
+                    className="w-full py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors mb-2"
+                    onClick={() => {
+                      setProposedPrice('18,100');
+                      setShowOffer(false);
+                    }}
+                  >
+                    ₹ 18,100
+                  </button>
+                  <button
+                    className="w-full py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors"
+                    onClick={() => {
+                      setProposedPrice('17,100');
+                      setShowOffer(false);
+                    }}
+                  >
+                    ₹ 17,100
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>

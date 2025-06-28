@@ -51,14 +51,6 @@ export default function FoodItemCard({ item }) {
     name,
     isFavorite,
   });
-
-  toast.custom(
-    <div className={`px-4 py-2 rounded-lg shadow-md font-semibold text-white ${
-      isFavorite ? "bg-red-600" : "bg-green-600"
-    }`}>
-      {isFavorite ? `${name} removed from favorites` : `${name} added to favorites`}
-    </div>
-  );
 };
 
   const name = item?.productLanguages?.[0]?.name || "Item";
@@ -84,11 +76,11 @@ export default function FoodItemCard({ item }) {
         })),
       };
       await addToCart(payload); 
-      toast.custom(
-        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          {name} added to cart successfully 
-        </div>
-      );
+      // toast.custom(
+      //   <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+      //     {name} added to cart successfully 
+      //   </div>
+      // );
       handleClose();
     } catch (error) {
       toast.custom(
