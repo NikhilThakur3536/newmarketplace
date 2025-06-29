@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, MapPin, UserRound, Globe } from "lucide-react";
 import Image from "next/image";
 import { useLocation } from "../../context/LocationContext";
-import { useLanguage } from "../../context/LanguageContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
 
 export default function FoodHeader() {
