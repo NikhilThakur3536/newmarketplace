@@ -6,9 +6,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 function slugify(text) {
-  return typeof text === "string"
-    ? text.trim().toLowerCase().replace(/,/g, "").replace(/\s+/g, "-")
-    : "unknown";
+  if (typeof text !== "string" || !text) {
+    return "unknown";
+  }
+  return encodeURIComponent(
+    text
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") 
+      .replace(/\s+/g, "-")
+  ).replace(/%20/g, "-"); // Replace encoded spaces with hyphens
 }
 
 export default function OrderCard() {
