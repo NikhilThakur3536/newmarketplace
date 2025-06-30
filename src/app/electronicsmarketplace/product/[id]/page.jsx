@@ -12,7 +12,6 @@ import { useFavorite } from "@/app/context/FavouriteContext";
 import toast from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-const languageId = "2bfa9d89-61c4-401e-aae3-346627460558";
 
 const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage,productName,productDescription,productSeller}) => {
   const { chatId, messages, isSending, isChatLoading, chatError, sendMessage, fetchMessages, deleteMessage, participantId } = useChat();
@@ -372,6 +371,8 @@ export default function ProductDetailPage() {
         return;
       }
 
+      const lang = localStorage.getItem("selectedLanguage")
+
       const url = `${BASE_URL}/user/product/listv2`;
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const headers = {
@@ -381,7 +382,7 @@ export default function ProductDetailPage() {
       const body = {
         limit: 4000,
         offset: 0,
-        languageId,
+        languageId: lang ||"2bfa9d89-61c4-401e-aae3-346627460558",
       };
 
       let prod = null;
@@ -436,6 +437,7 @@ export default function ProductDetailPage() {
       setSimilarProductsError(null);
 
       const url = `${BASE_URL}/user/product/listv2`;
+      const lang = localStorage.getItem("selectedLanguage")
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const headers = {
         "Content-Type": "application/json",
@@ -444,7 +446,7 @@ export default function ProductDetailPage() {
       const body = {
         limit: 10,
         offset: 0,
-        languageId,
+        languageId:lang ||"2bfa9d89-61c4-401e-aae3-346627460558",
         categoryIds: [product.categoryId],
       };
 
@@ -562,7 +564,7 @@ export default function ProductDetailPage() {
             <h1 className="text-xl font-bold text-gray-900 flex-1">{product.name}</h1>
             <button
               onClick={handleOpenChat}
-              className="p-2 bg-green-500 text-white rounded-lg text-sm z-40"
+              className="p-2 bg-blue-500 text-white rounded-lg text-sm z-40"
               disabled={!product.storeId}
             >
               💬 Chat
@@ -678,7 +680,7 @@ export default function ProductDetailPage() {
 
           <button
             onClick={() => addToCartHandler(product, quantity, product.varientId)}
-            className="w-[80%] py-4 bg-green-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2"
+            className="w-[80%] py-4 bg-blue-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2"
           >
             <ShoppingCart className="w-5 h-5" />
             Add to Cart
