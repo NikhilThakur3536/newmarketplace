@@ -4,7 +4,7 @@ import { ChevronLeft, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useFavorite } from "@/app/context/FavouriteContext";
 import { useEffect } from "react";
-import FoodItemCard from "@/app/components/foodmarketplace/FoodItemCard";
+import FavItemCard from "@/app/components/foodmarketplace/FavItemCards";
 
 export default function Favorite() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function Favorite() {
   }, []);
 
   useEffect(() => {
-    // console.log("Favorite Items in Favorite Component:", favoriteItems);
+    console.log("Favorite Items in Favorite Component:", favoriteItems);
   }, [favoriteItems]);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function Favorite() {
             <div className="space-y-4">
               {favoriteItems.map((item) => {
                 // console.log("Rendering Item:", item);
-                return <FoodItemCard key={item.id} item={item} />;
+                return <FavItemCard key={item.id} item={item} />;
               })}
             </div>
           )}
