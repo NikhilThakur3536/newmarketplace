@@ -34,7 +34,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
   const [cartCount, setCartCount] = useState(0);
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastCartHash, setLastCartHash] = useState(null); 
+  const [lastCartHash, setLastCartHash] = useState(null);
   const pathname = usePathname();
   const cartEndpoints = apiMap[marketplace];
 
@@ -46,10 +46,11 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
   };
 
   const getLang = () => {
-    if(typeof window !== "undefined"){
-      return localStorage.getItem("selectedLanguage")
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("selectedLanguage");
     }
-  }
+    return null;
+  };
 
   const fetchCartItems = useCallback(
     debounce(async () => {
@@ -65,14 +66,11 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
           return;
         }
 
-        // console.log(`Calling fetchCartItems for ${marketplace}`); 
         const response = await axios.post(
           `${baseUrl}${cartEndpoints.list}`,
           { languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558" },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
         );
-
-        // console.log(`Cart response for ${marketplace}:`, response.data);
 
         const items = response.data?.data?.rows || [];
         if (!Array.isArray(items)) {
@@ -82,6 +80,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
           localStorage.setItem(`cartCount_${marketplace}`, "0");
           return;
         }
+
         const cartHash = JSON.stringify(
           items.map((item) => ({
             id: item.id,
@@ -91,7 +90,6 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         );
 
         if (cartHash === lastCartHash) {
-          // console.log(`No changes in ${marketplace} cart, skipping update`);
           return;
         }
 
@@ -102,7 +100,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
 
         setCartItems(items);
         setCartCount(total);
-        setLastCartHash(cartHash); 
+        setLastCartHash(cartHash);
         localStorage.setItem(`cartCount_${marketplace}`, total.toString());
         window.dispatchEvent(new CustomEvent("cart-updated", { detail: { marketplace } }));
       } catch (error) {
@@ -118,7 +116,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         setIsLoading(false);
       }
     }, 300),
-    [cartEndpoints, marketplace, lastCartHash,]
+    [cartEndpoints, marketplace, lastCartHash]
   );
 
   const addToCart = async (payload) => {
@@ -126,17 +124,55 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
       const token = getToken();
       if (!token) throw new Error("No token");
 
-      await axios.post(`${baseUrl}${cartEndpoints.add}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+      const { productId, quantity, productVarientUomId, varientId, addons, replace } = payload;
+      const roundedQuantity = Math.max(1, Math.floor(Number(quantity)));
+
+      // Check if the product and variant exist in the cart
+      const existingItem = cartItems.find((item) => {
+        return item.productId === productId && 
+               (marketplace === "foodmarketplace" ? item.productVarientUomId === productVarientUomId : item.varientId === varientId);
       });
 
+      if (existingItem && replace) {
+        // Replace quantity using edit endpoint
+        await axios.post(
+          `${baseUrl}${cartEndpoints.edit}`,
+          { cartId: existingItem.id, productId, quantity: roundedQuantity },
+          { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+        );
+      } else {
+        const addPayload = {
+          productId,
+          quantity: roundedQuantity,
+          varientId
+        };
+
+        if (marketplace === "foodmarketplace" && productVarientUomId) {
+          addPayload.productVarientUomId = productVarientUomId;
+          if (addons && addons.length > 0) {
+            addPayload.addons = addons;
+          }
+        } else if (varientId) {
+          addPayload.varientId = varientId;
+        }
+
+        await axios.post(
+          `${baseUrl}${cartEndpoints.add}`,
+          addPayload,
+          { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+        );
+      }
+
       await fetchCartItems();
-      toast.dismiss("cart-toast")
-      toast.success("Item added to cart",{id:"cart-toast",duration:300});
+      toast.dismiss("cart-toast");
+      toast.success(`Item ${existingItem && replace ? "updated in" : "added to"} cart`, {
+        id: "cart-toast",
+        duration: 300,
+      });
     } catch (error) {
-      console.error(`Add to cart error for ${marketplace}:`, error);
-      toast.dismiss("cart-remove")
-      toast.error("Failed to add to cart",{id:"cart-remove",duration:300});
+      console.error(`Add to cart error for ${marketplace}:`, error.response?.data || error.message);
+      toast.dismiss("cart-toast");
+      toast.error("Failed to add to cart", { id: "cart-toast", duration: 300 });
     }
   };
 
@@ -148,11 +184,11 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
       await axios.post(
         `${baseUrl}${cartEndpoints.remove}`,
         { cartId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
       );
 
       await fetchCartItems();
-      toast.dismiss("remove-toast")
+      toast.dismiss("remove-toast");
       toast.custom(
         <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           Item removed successfully
@@ -160,7 +196,9 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
         { id: "remove-toast", duration: 250 }
       );
     } catch (error) {
-      
+      console.error(`Remove from cart error for ${marketplace}:`, error);
+      toast.dismiss("remove-toast");
+      toast.error("Failed to remove from cart", { id: "remove-toast", duration: 250 });
     }
   };
 
@@ -174,11 +212,11 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
       await axios.post(
         `${baseUrl}${cartEndpoints.edit}`,
         { cartId, productId, quantity: roundedQuantity },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
       );
 
       await fetchCartItems();
-      toast.dismiss("quantity-toast")
+      toast.dismiss("quantity-toast");
       toast.custom(
         <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           Quantity updated successfully
@@ -188,6 +226,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
     } catch (error) {
       console.error(`Update quantity error for ${marketplace}:`, error);
       await fetchCartItems();
+      toast.dismiss("quantity-toast");
       toast.custom(
         <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
           Quantity update failed
@@ -200,7 +239,7 @@ export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
   const clearCart = () => {
     setCartItems([]);
     setCartCount(0);
-    setLastCartHash(null); 
+    setLastCartHash(null);
     localStorage.setItem(`cartCount_${marketplace}`, "0");
   };
 

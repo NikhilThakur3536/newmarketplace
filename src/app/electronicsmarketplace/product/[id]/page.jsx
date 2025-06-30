@@ -351,7 +351,7 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(1); // Default to 1, updated from cart
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [similarProductsError, setSimilarProductsError] = useState(null);
@@ -360,8 +360,12 @@ export default function ProductDetailPage() {
   const [error, setError] = useState(null);
   const [showChat, setShowChat] = useState(false);
   const { initiateChat, clearChat } = useChat();
-  const { addToCart, cartCount } = useCart();
+  const { addToCart, cartCount, cartItems, updateCartQuantity } = useCart(); 
   const { favoriteItems, toggleFavorite } = useFavorite();
+
+  const isInCart = cartItems.some(
+    (item) => item.productId === id && item.varientId === product?.varientId
+  );
 
   useEffect(() => {
     const fetchProductById = async () => {
@@ -371,8 +375,7 @@ export default function ProductDetailPage() {
         return;
       }
 
-      const lang = localStorage.getItem("selectedLanguage")
-
+      const lang = localStorage.getItem("selectedLanguage");
       const url = `${BASE_URL}/user/product/listv2`;
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const headers = {
@@ -382,24 +385,23 @@ export default function ProductDetailPage() {
       const body = {
         limit: 4000,
         offset: 0,
-        languageId: lang ||"2bfa9d89-61c4-401e-aae3-346627460558",
+        languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558",
       };
 
       let prod = null;
       try {
         const response = await axios.post(url, body, { headers });
-        // console.log(response.data.data?.rows)
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           prod = response.data.data.rows.find((p) => p.id === id);
           if (prod) {
-            setProduct({
+            const productData = {
               id: prod.id,
               name: prod.productLanguages?.[0]?.name || "Unnamed Product",
               price: prod.varients?.[0]?.inventory?.price || 0,
               image: prod.productImages?.[0]?.url || "/placeholder.jpg",
               brand: prod.manufacturer?.name || "Unknown",
               storeId: prod.store?.id || null,
-              sellerName:prod.store?.name,
+              sellerName: prod.store?.name,
               category: prod.category?.categoryLanguages?.[0]?.name || "General",
               categoryId: prod.category?.id || null,
               rating: prod.rating || 4,
@@ -407,8 +409,15 @@ export default function ProductDetailPage() {
               specifications: Array.isArray(prod.specifications) ? prod.specifications : [],
               longDescription: prod.productLanguages?.[0]?.longDescription || "No description available",
               varientId: prod.varients?.[0]?.id,
-              inventoryId:prod.varients?.[0]?.inventory?.id
-            });
+              inventoryId: prod.varients?.[0]?.inventory?.id,
+            };
+            setProduct(productData);
+
+            // Set initial quantity from cart
+            const cartItem = cartItems.find(
+              (item) => item.productId === productData.id && item.varientId === productData.varientId
+            );
+            setQuantity(cartItem ? parseInt(cartItem.quantity, 10) : 1); // Use cart quantity or 1
           } else {
             setError("Product not found in response");
           }
@@ -423,11 +432,7 @@ export default function ProductDetailPage() {
     };
 
     fetchProductById();
-  }, [id]);
-
-  useEffect(() => {
-    // console.log("product details", product);
-  });
+  }, [id, cartItems]); 
 
   useEffect(() => {
     if (!product?.categoryId) return;
@@ -437,7 +442,7 @@ export default function ProductDetailPage() {
       setSimilarProductsError(null);
 
       const url = `${BASE_URL}/user/product/listv2`;
-      const lang = localStorage.getItem("selectedLanguage")
+      const lang = localStorage.getItem("selectedLanguage");
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const headers = {
         "Content-Type": "application/json",
@@ -446,7 +451,7 @@ export default function ProductDetailPage() {
       const body = {
         limit: 10,
         offset: 0,
-        languageId:lang ||"2bfa9d89-61c4-401e-aae3-346627460558",
+        languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558",
         categoryIds: [product.categoryId],
       };
 
@@ -484,7 +489,7 @@ export default function ProductDetailPage() {
       return;
     }
 
-    const newChatId = await initiateChat(product.storeId,product.id,product.varientId,product.inventoryId);
+    const newChatId = await initiateChat(product.storeId, product.id, product.varientId, product.inventoryId);
     if (newChatId) {
       setShowChat(true);
     }
@@ -523,10 +528,27 @@ export default function ProductDetailPage() {
         varientId: varientId,
       };
       await addToCart(payload);
-      
-      setQuantity(1);
+      toast.success(`${product.name} quantity updated to ${qty} in cart`);
     } catch (err) {
-      // console.log(err)
+      console.error("Error updating cart:", err);
+      toast.error("Failed to update cart");
+    }
+  };
+
+  const handleQuantityChange = async (newQuantity) => {
+    const cartItem = cartItems.find(
+      (item) => item.productId === product.id && item.varientId === product.varientId
+    );
+    if (cartItem) {
+      // Update quantity using the edit API
+      await updateCartQuantity({
+        cartId: cartItem.id,
+        productId: product.id,
+        quantity: newQuantity,
+      });
+      setQuantity(newQuantity); 
+    } else {
+      setQuantity(newQuantity);
     }
   };
 
@@ -617,6 +639,9 @@ export default function ProductDetailPage() {
                   const isFavorite = favoriteItems.some(
                     (item) => item.id === simProduct.id || item.productId === simProduct.id
                   );
+                  const isSimProductInCart = cartItems.some(
+                    (item) => item.productId === simProduct.id && item.varientId === simProduct.varientId
+                  );
                   return (
                     <div key={simProduct.id} className="min-w-[200px] bg-white rounded-2xl p-4 shadow-sm">
                       <div className="relative mb-3">
@@ -644,13 +669,15 @@ export default function ProductDetailPage() {
                       >
                         View Details
                       </button>
-                      <button
-                        onClick={() => addToCartHandler(simProduct, 1, simProduct.varientId)}
-                        className="w-full mt-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
-                      >
-                        <ShoppingCart className="w-5 h-5" />
-                        Add to Cart
-                      </button>
+                      {!isSimProductInCart && (
+                        <button
+                          onClick={() => addToCartHandler(simProduct, 1, simProduct.varientId)}
+                          className="w-full mt-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                        >
+                          <ShoppingCart className="w-5 h-5" />
+                          Add to Cart
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -664,40 +691,45 @@ export default function ProductDetailPage() {
         <div className="fixed bottom-0 transform -translate-x-4 w-full max-w-md bg-white shadow-lg z-10 rounded-lg p-8">
           <div className="flex items-center gap-4 mb-6">
             <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
               className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center"
+              disabled={quantity <= 1 && !isInCart} 
             >
               <Minus className="w-5 h-5" />
             </button>
             <span className="text-xl font-semibold min-w-[2rem] text-center">{quantity}</span>
             <button
-              onClick={() => setQuantity(quantity + 1)}
+              onClick={() => handleQuantityChange(quantity + 1)}
               className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center"
             >
               <Plus className="w-5 h-5" />
             </button>
           </div>
 
-          <button
-            onClick={() => addToCartHandler(product, quantity, product.varientId)}
-            className="w-[80%] py-4 bg-blue-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            Add to Cart
-          </button>
+          {!isInCart && (
+            <button
+              onClick={() => addToCartHandler(product, quantity, product.varientId)}
+              className="w-[80%] py-4 bg-blue-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              Add to Cart
+            </button>
+          )}
         </div>
       </div>
 
-      {showChat && product && <ChatInterface 
-        onClose={handleCloseChat} 
-        productId={product.id} 
-        variantId={product.varientId} 
-        inventoryId={product.inventoryId} 
-        productName={product.name} 
-        productImage={product.image}
-        productDescription={product.longDescription}
-        productSeller={product.sellerName}
-      />}
+      {showChat && product && (
+        <ChatInterface
+          onClose={handleCloseChat}
+          productId={product.id}
+          varientId={product.varientId}
+          inventoryId={product.inventoryId}
+          productName={product.name}
+          productImage={product.image}
+          productDescription={product.longDescription}
+          productSeller={product.sellerName}
+        />
+      )}
     </div>
   );
 }

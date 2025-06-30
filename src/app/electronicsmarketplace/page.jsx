@@ -88,7 +88,6 @@ export default function HomePage() {
         <div className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md z-40 bg-white px-4 py-4 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Menu className="w-6 h-6 text-gray-700" />
               <div>
                 <p className="text-gray-500 text-sm">Welcome</p>
                 <p className="font-semibold text-lg">Electronics Store</p>

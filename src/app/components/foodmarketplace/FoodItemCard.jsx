@@ -2,26 +2,43 @@
 
 import { Plus, Minus, Heart } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "@/app/context/CartContext"; 
+import { useCart } from "@/app/context/CartContext";
 import toast from "react-hot-toast";
 import { useFavorite } from "@/app/context/FavouriteContext";
 
 export default function FoodItemCard({ item }) {
-  console.log("foodcartitem",item)
+  // console.log("foodcartitem", item); // Log the item to verify structure
   const { toggleFavorite, favoriteItems } = useFavorite();
-  const isFavorite = favoriteItems.some((fav) => fav.id === item.id);
+  const isFavorite = favoriteItems.some((fav) => fav.id === item.id || fav.productId === item.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedAddons, setSelectedAddons] = useState([]);
-  const { addToCart } = useCart(); // ✅ use context
+  const { addToCart, cartItems, updateCartQuantity } = useCart();
+
+  // Check if the item is in the cart
+  const cartItem = cartItems.find(
+    (cart) =>
+      cart.productId === item.id &&
+      cart.productVarientUomId === item?.varients?.[0]?.productVarientUoms?.[0]?.id
+  );
+  const isInCart = !!cartItem;
+
+  // Set initial quantity based on cart
+  useEffect(() => {
+    if (cartItem) {
+      setQuantity(parseInt(cartItem.quantity, 10));
+    } else {
+      setQuantity(1);
+    }
+  }, [cartItem]);
 
   const handleAddClick = () => setIsModalOpen(true);
 
   const handleClose = () => {
     setIsModalOpen(false);
-    setQuantity(1);
+    setQuantity(cartItem ? parseInt(cartItem.quantity, 10) : 1);
     setSelectedAddons([]);
   };
 
@@ -45,13 +62,36 @@ export default function FoodItemCard({ item }) {
   };
 
   const handleFavoriteClick = () => {
-  toggleFavorite({
-    productId: item.id,
-    productVarientUomId: item.varients?.[0]?.productVarientUoms?.[0]?.id,
-    name,
-    isFavorite,
-  });
-};
+    toggleFavorite({
+      productId: item.id,
+      productVarientUomId: item.varients?.[0]?.productVarientUoms?.[0]?.id,
+      name,
+      isFavorite,
+    });
+  };
+
+  const handleQuantityChange = async (newQuantity) => {
+    if (isInCart && cartItem) {
+      try {
+        await updateCartQuantity({
+          cartId: cartItem.id,
+          productId: item.id,
+          quantity: newQuantity,
+        });
+        setQuantity(newQuantity);
+      } catch (error) {
+        console.error("Failed to update quantity:", error);
+        toast.custom(
+          <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+            Failed to update quantity
+          </div>,
+          { duration: 250 }
+        );
+      }
+    } else {
+      setQuantity(newQuantity);
+    }
+  };
 
   const name = item?.productLanguages?.[0]?.name || "Item";
   const price = Number(item?.varients?.[0]?.productVarientUoms?.[0]?.inventory?.price || 0);
@@ -62,10 +102,35 @@ export default function FoodItemCard({ item }) {
   const totalPrice = (price + totalAddonPrice) * quantity;
 
   const handleAddToCart = async () => {
+    const productVarientUomId = item?.varients?.[0]?.productVarientUoms?.[0]?.id;
+    // console.log("Payload being sent:", {
+    //   productId: item?.id,
+    //   productVarientUomId,
+    //   quantity,
+    //   addons: selectedAddons.map((addon) => ({
+    //     addOnId: addon.id,
+    //     addOnProductId: addon.productId,
+    //     addOnVarientId: addon.varientId,
+    //     productVarientUomId: addon.uomId,
+    //     quantity: 1,
+    //   })),
+    // });
+
+    if (!productVarientUomId) {
+      console.error("Invalid productVarientUomId:", item);
+      toast.custom(
+        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          Invalid item data: Missing product variant UOM ID
+        </div>,
+        { duration: 300 }
+      );
+      return;
+    }
+
     try {
       const payload = {
         productId: item?.id,
-        productVarientUomId: item?.varients?.[0]?.productVarientUoms?.[0]?.id,
+        productVarientUomId,
         quantity,
         addons: selectedAddons.map((addon) => ({
           addOnId: addon.id,
@@ -75,20 +140,22 @@ export default function FoodItemCard({ item }) {
           quantity: 1,
         })),
       };
-      await addToCart(payload); 
-      // toast.custom(
-      //   <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-      //     {name} added to cart successfully 
-      //   </div>
-      // );
+      await addToCart(payload);
+      toast.custom(
+        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+          {name} added to cart successfully
+        </div>,
+        { duration: 300 }
+      );
       handleClose();
     } catch (error) {
+      console.error("Failed to add item to cart:", error.response?.data || error.message);
       toast.custom(
         <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          Failed to add {name} to cart 
-        </div>
+          Failed to add {name} to cart
+        </div>,
+        { duration: 300 }
       );
-      console.error("Failed to add item to cart:", error);
     }
   };
 
@@ -106,13 +173,34 @@ export default function FoodItemCard({ item }) {
         </div>
         <div className="w-[50%] relative overflow-hidden rounded-lg">
           <Image src={imageUrl} alt="food item" fill className="object-cover rounded-lg" />
+          {isInCart ? (
+            <div className="flex items-center gap-2 bg-white border border-lightpink rounded-xl w-fit h-fit px-3 py-1 absolute bottom-0 left-10">
+              <button
+                onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
+                disabled={quantity <= 1}
+              >
+                <Minus size={18} className="text-lightpink" />
+              </button>
+              <span className="text-lg font-bold text-lightpink">{quantity}</span>
+              <button onClick={() => handleQuantityChange(quantity + 1)}>
+                <Plus size={18} className="text-lightpink" />
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={handleAddClick}
+              className="bg-white border border-lightpink rounded-xl w-fit h-fit px-6 py-1 text-lg font-bold absolute bottom-0 left-10 text-lightpink cursor-pointer"
+            >
+              ADD
+            </div>
+          )}
           <div
-            onClick={handleAddClick}
-            className="bg-white border border-lightpink rounded-xl w-fit h-fit px-6 py-1 text-lg font-bold absolute bottom-0 left-10 text-lightpink cursor-pointer"
+            className="w-fit h-fit p-1 bg-gray-100/40 flex items-center justify-center absolute top-2 right-2 rounded-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleFavoriteClick();
+            }}
           >
-            ADD
-          </div>
-          <div className="w-fit h-fit p-1 bg-gray-100/40 flex items-center justify-center absolute top-2 right-2 rounded-full" onClick={(e) => {e.stopPropagation();handleFavoriteClick();}}>
             <Heart fill={isFavorite ? "red" : "white"} color="white" size={20} />
           </div>
         </div>
