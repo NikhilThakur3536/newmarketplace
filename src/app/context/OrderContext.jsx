@@ -53,7 +53,7 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
       paymentStatus: order.paymentStatus,
       orderDate: order.orderDate,
       store: order.store?.name || null,
-      location: order.customerAddress?.addressLine1 || "NA",
+      location: order.store?.address || "NA",
       location1:order.customerAddress?.addressLine2,
       landmark:order.customerAddress?.landmark,
       orderType: order.orderType || "Delivery",
