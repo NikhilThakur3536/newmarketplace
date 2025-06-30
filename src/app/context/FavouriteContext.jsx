@@ -9,13 +9,17 @@ const FavoriteContext = createContext();
 
 export const useFavorite = () => useContext(FavoriteContext);
 
-export const FavoriteProvider = ({ children }) => {
+export const FavoriteProvider = ({ children, marketplace }) => {
   const [favoriteItems, setFavoriteItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(null);
 
   const router = useRouter();
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+
+  // Determine the base URL and endpoint suffix based on marketplace
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
+  const endpointSuffix = marketplace === "electronicsmarketplace" ? "v1" : "";
 
   const fetchFavorites = async () => {
     const token = localStorage.getItem("token");
@@ -28,7 +32,7 @@ export const FavoriteProvider = ({ children }) => {
       });
       setTimeout(() => {
         setShowPopup(null);
-        router.push("/foodmarketplace/login");
+        router.push(`/${marketplace}/login`);
       }, 2000);
       return;
     }
@@ -36,24 +40,26 @@ export const FavoriteProvider = ({ children }) => {
     setLoading(true);
     try {
       const payload = { languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558" };
-      const response = await axios.post(`${BASE_URL}/user/favoriteProduct/listv1`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        `${BASE_URL}/user/favoriteProduct/list${endpointSuffix}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("fav item response", response);
 
       const items = response.data?.data?.rows?.map((item) => ({
         id: item.id || item.productId || "unknown-id",
         productLanguages: item.productLanguages || [{ name: "Unknown Product", longDescription: "No description" }],
-        varients: item.varients || [{
-          productVarientUoms: [{
-            id: "default-uom-id",
-            inventory: { price: 0 },
-          }],
-        }],
+        varients: item.varients,
         media: item.media || [{ url: "/placeholder.jpg" }],
         addons: item.addons || [],
+        productVarientUomId: item.varients?.[0]?.productVarientUom?.id,
       })) || [];
 
       setFavoriteItems(items);
@@ -71,7 +77,7 @@ export const FavoriteProvider = ({ children }) => {
 
   useEffect(() => {
     fetchFavorites();
-  }, []);
+  }, [marketplace]); // Re-fetch when marketplace changes
 
   // Helper function to check if a product is in favorites
   const isFavorite = (productId) => {
@@ -81,14 +87,14 @@ export const FavoriteProvider = ({ children }) => {
   const toggleFavorite = async ({ productId, productVarientUomId, name }) => {
     const token = localStorage.getItem("token");
     if (!token) {
-      localStorage.setItem("redirectUrl", "/foodmarketplace/login");
+      localStorage.setItem("redirectUrl", `/${marketplace}/login`);
       setShowPopup({
         type: "error",
         message: "Please log in to add or remove from favorites.",
       });
       setTimeout(() => {
         setShowPopup(null);
-        router.push("/foodmarketplace/login");
+        router.push(`/${marketplace}/login`);
       }, 500);
       return;
     }

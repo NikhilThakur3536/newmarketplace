@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
         <CouponProvider>
           <OrderProvider marketplace={"foodmarketplace"}>
             <CartProvider marketplace={"foodmarketplace"}>
-            <FavoriteProvider>
+            <FavoriteProvider marketplace={"foodmarketplace"}>
           {children}
           </FavoriteProvider>
           </CartProvider>

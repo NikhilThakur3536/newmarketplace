@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
             <ProductProvider>
               <OrderProvider marketplace={"electronics"}>
               <ChatProvider>
-                <FavoriteProvider>
+                <FavoriteProvider marketplace={"electronicsmarketplace"}>
                   <CouponProvider>
                 <CartProvider marketplace="electronicsmarketplace">
                   <CustomerAddressProvider>

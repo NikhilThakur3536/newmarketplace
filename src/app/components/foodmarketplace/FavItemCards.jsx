@@ -94,7 +94,7 @@ export default function FavItemCard({ item }) {
   };
 
   const name = item?.productLanguages?.[0]?.name || "Item";
-  const price = Number(item?.varients?.[0]?.inventory?.price || 0);
+  const price = Number(item?.varients?.[0]?.productVarientUoms?.[0]?.inventory?.price || 0);
   const description = item?.productLanguages?.[0]?.longDescription || "";
   const imageUrl = item?.media?.[0]?.url || "/placeholder.jpg";
 
