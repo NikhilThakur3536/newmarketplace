@@ -165,7 +165,7 @@ export default function Cart() {
         orderType // Pass orderType to placeOrder
       );
       if (success) {
-        await Promise.all(localCartItems.map((item) => removeFromCart(item.id)));
+        // await Promise.all(localCartItems.map((item) => removeFromCart(item.id)));
         await fetchCartItems();
         setLocalCartItems([]);
         setIsModalOpen(false);
