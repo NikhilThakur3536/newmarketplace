@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Heart, User, ShoppingCart, ClipboardList } from "lucide-react";
+import { Home, Heart, User, ShoppingCart, ClipboardList, MessageCircleMore } from "lucide-react";
 import { useCart } from "@/app/context/CartContext";
 export default function BottomNavigation() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export default function BottomNavigation() {
     { icon: ClipboardList, label: "Orders", path: "/electronicsmarketplace/order" },
     { icon: ShoppingCart, label: "Cart", path: "/electronicsmarketplace/cart" },
     { icon: Heart, label: "Favorites", path: "/electronicsmarketplace/favorite" },
-    { icon: User, label: "Profile", path: "/electronicsmarketplace/profile" },
+    { icon: MessageCircleMore, label: "Chats", path: "/electronicsmarketplace/chats" },
   ];
 
   return (

@@ -11,15 +11,19 @@ const ChatContext = createContext();
 export function ChatProvider({ children }) {
   const [chatId, setChatId] = useState(null);
   const [participantId, setParticipantId] = useState(null);
-  const [chatProductId, setChatProductId] = useState(null); // New state for chatProductId
+  const [chatProductId, setChatProductId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isSending, setIsSending] = useState(false);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatError, setChatError] = useState(null);
+  const [productName, setProductName] = useState(null);
+  const [productDescription, setProductDescription] = useState(null);
+  const [chatListCache, setChatListCache] = useState(null); // Cache for chat list
 
   const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
 
   const checkExistingChat = useCallback(async (participantId, productId) => {
+    console.log("Checking existing chat for participantId:", participantId, "productId:", productId, "at:", new Date().toISOString());
     if (!productId) {
       console.warn("Missing productId:", { productId });
       setChatError("Missing product ID");
@@ -34,36 +38,37 @@ export function ChatProvider({ children }) {
         return { chatId: null, chatProductId: null };
       }
 
-      const response = await axios.get(`${BASE_URL}/user/chat/list`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Use cached chat list if available
+      let chats = chatListCache;
+      if (!chats) {
+        const response = await axios.get(`${BASE_URL}/user/chat/list`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      // console.log("Check Existing Chat Response:", JSON.stringify(response.data, null, 2));
-
-      if (response.data.success && Array.isArray(response.data.data) && response.data.data.length > 0) {
-        const existingChat = response.data.data.find(
-          (chat) =>
-            chat.participantType === "seller" &&
-            chat.chatType === "direct" &&
-            chat.productId === productId &&
-            chat.participantId === participantId
-        );
-
-        if (existingChat) {
-          const chatProductId = existingChat.chatProducts?.[0]?.id || null;
-          // console.log("Found existing chat with ID:", existingChat.id, "and chatProductId:", chatProductId, "for productId:", productId);
-          return { chatId: existingChat.id, chatProductId };
+        if (response.data.success && Array.isArray(response.data.data) && response.data.data.length > 0) {
+          chats = response.data.data;
+          setChatListCache(chats); // Cache the chat list
         } else {
-          // console.log("No matching chat found for productId:", productId);
-          setChatError("No matching chat found for this product");
+          setChatError("No existing chats found");
           return { chatId: null, chatProductId: null };
         }
+      }
+
+      const existingChat = chats.find(
+        (chat) =>
+          chat.participantType === "seller" &&
+          chat.chatType === "direct" &&
+          chat.productId === productId &&
+          chat.participantId === participantId
+      );
+
+      if (existingChat) {
+        const chatProductId = existingChat.chatProducts?.[0]?.id || null;
+        return { chatId: existingChat.id, chatProductId };
       } else {
-        // console.log("No chats found or API call unsuccessful:", response.data);
-        setChatError("No existing chats found");
         return { chatId: null, chatProductId: null };
       }
     } catch (err) {
@@ -72,7 +77,7 @@ export function ChatProvider({ children }) {
       setChatError(`Failed to check existing chats: ${errorMessage}`);
       return { chatId: null, chatProductId: null };
     }
-  }, []);
+  }, [chatListCache]);
 
   const fetchMessages = useCallback(
     async (chatId) => {
@@ -85,6 +90,8 @@ export function ChatProvider({ children }) {
       setIsChatLoading(true);
       setChatError(null);
       setMessages([]);
+      setProductName(null);
+      setProductDescription(null);
 
       try {
         const token = getToken();
@@ -106,37 +113,35 @@ export function ChatProvider({ children }) {
           }
         );
 
-        // console.log("Fetch Messages API Response:", JSON.stringify(response.data, null, 2));
-
         if (response.data.success) {
-          const messagesData = Array.isArray(response.data.data)
-            ? response.data.data
-            : response.data.data?.messages || response.data.data?.results || [];
-
-          // console.log("Parsed messagesData:", messagesData);
+          const messagesData = Array.isArray(response.data.data?.messages)
+            ? response.data.data.messages
+            : response.data.data?.results || [];
 
           if (messagesData.length === 0) {
-            // console.log("No messages found for chatId:", chatId);
             setMessages([]);
           } else {
             setMessages(
-              messagesData.map((msg, index) => {
-                const mappedMsg = {
-                  id: msg.id || `temp-${index}`,
-                  text: msg.messageText || "",
-                  sender: msg.senderId === participantId ? "other" : "user",
-                  timestamp: msg.createdAt
-                    ? new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                  attachments: msg.attachments || [],
-                  proposedPrice: msg.proposedPrice || null,
-                };
-                // console.log("Mapped message:", mappedMsg);
-                return mappedMsg;
-              })
+              messagesData.map((msg, index) => ({
+                id: msg.id || `temp-${index}`,
+                text: msg.messageText || "",
+                sender: msg.senderId === participantId ? "other" : "user",
+                timestamp: msg.createdAt
+                  ? new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                attachments: msg.attachments || [],
+                proposedPrice: msg.proposedPrice || null,
+              }))
+            );
+          }
+
+          if (response.data.data?.activeNegotiation) {
+            setProductName(response.data.data.activeNegotiation.product?.name || "Unnamed Product");
+            setProductDescription(
+              response.data.data.activeNegotiation.variant?.name || "No description"
             );
           }
         } else {
@@ -154,100 +159,106 @@ export function ChatProvider({ children }) {
   );
 
   const initiateChat = useCallback(
-  async (participantId, productId, varientId, inventoryId) => {
-    if (!participantId || !productId) {
-      setChatError("No participant ID or product ID provided");
-      console.warn("Missing participantId or productId:", { participantId, productId });
-      return false;
-    }
-
-    setIsChatLoading(true);
-    setChatError(null);
-    setMessages([]);
-
-    try {
-      const { chatId: existingChatId, chatProductId: existingChatProductId } = await checkExistingChat(participantId, productId);
-      if (existingChatId) {
-        // console.log("Using existing chatId:", existingChatId, "and chatProductId:", existingChatProductId);
-        setChatId(existingChatId);
-        setParticipantId(participantId);
-        setChatProductId(existingChatProductId);
-        await fetchMessages(existingChatId);
-        return existingChatId;
+    async (participantId, productId, varientId, inventoryId) => {
+      if (!participantId || !productId) {
+        setChatError("No participant ID or product ID provided");
+        console.warn("Missing participantId or productId:", { participantId, productId });
+        return false;
       }
 
-      // console.log("Creating new chat for participantId:", participantId, "and productId:", productId);
-      const token = getToken();
-      if (!token) {
-        throw new Error("Authentication token missing");
+      if (isChatLoading) {
+        console.warn("Chat initiation in progress, skipping...");
+        return false;
       }
 
-      const response = await axios.post(
-        `${BASE_URL}/user/chat/create`,
-        {
+      setIsChatLoading(true);
+      setChatError(null);
+      setMessages([]);
+
+      try {
+        const { chatId: existingChatId, chatProductId: existingChatProductId } = await checkExistingChat(
           participantId,
-          participantType: "seller",
-          chatType: "direct",
-          productId,
-          varientId,
-          inventoryId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          productId
+        );
+        if (existingChatId) {
+          setChatId(existingChatId);
+          setParticipantId(participantId);
+          setChatProductId(existingChatProductId);
+          await fetchMessages(existingChatId);
+          return existingChatId;
         }
-      );
 
-      if (response.data.success) {
-        const newChatId = response.data.data.id;
-        const newChatProductId = response.data.data.chatProducts?.[0]?.id || null;
-        // console.log("Created new chat with ID:", newChatId, "and chatProductId:", newChatProductId);
-        setChatId(newChatId);
-        setParticipantId(participantId);
-        setChatProductId(newChatProductId);
-        await fetchMessages(newChatId);
-        return newChatId;
-      } else {
-        throw new Error("Failed to create chat session");
-      }
-    } catch (err) {
-      if (err.response?.data?.error === "Chat already exists" && err.response?.data?.existingChatId) {
-        const existingChatId = err.response.data.existingChatId;
-        // console.log("Chat already exists, using existingChatId:", existingChatId);
-        setChatId(existingChatId);
-        setParticipantId(participantId);
-        // Fetch chat details to get chatProductId
-        const token = getToken(); // Define token here
+        const token = getToken();
         if (!token) {
-          setChatError("Authentication token missing for fetching existing chat details");
-          console.error("No token available for fetching existing chat details");
-          return false;
+          throw new Error("Authentication token missing");
         }
-        const chatResponse = await axios.get(`${BASE_URL}/user/chat/list`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const existingChat = chatResponse.data.data.find((chat) => chat.id === existingChatId);
-        const existingChatProductId = existingChat?.chatProducts?.[0]?.id || null;
-        setChatProductId(existingChatProductId);
-        await fetchMessages(existingChatId);
-        return existingChatId;
-      }
 
-      const errorMessage = err.response?.data?.message || err.message;
-      setChatError(`Failed to create chat: ${errorMessage}`);
-      console.error("Chat Creation Error:", errorMessage, err.response?.data);
-      return false;
-    } finally {
-      setIsChatLoading(false);
-    }
-  },
-  [checkExistingChat, fetchMessages]
-);
+        const response = await axios.post(
+          `${BASE_URL}/user/chat/create`,
+          {
+            participantId,
+            participantType: "seller",
+            chatType: "direct",
+            productId,
+            varientId,
+            inventoryId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          const newChatId = response.data.data.id;
+          const newChatProductId = response.data.data.chatProducts?.[0]?.id || null;
+          setChatId(newChatId);
+          setParticipantId(participantId);
+          setChatProductId(newChatProductId);
+          await fetchMessages(newChatId);
+          setChatListCache(null); // Invalidate cache when a new chat is created
+          return newChatId;
+        } else {
+          throw new Error("Failed to create chat session");
+        }
+      } catch (err) {
+        if (err.response?.data?.error === "Chat already exists" && err.response?.data?.existingChatId) {
+          const existingChatId = err.response.data.existingChatId;
+          setChatId(existingChatId);
+          setParticipantId(participantId);
+          const token = getToken();
+          if (!token) {
+            setChatError("Authentication token missing for fetching existing chat details");
+            console.error("No token available for fetching existing chat details");
+            return false;
+          }
+          const chatResponse = await axios.get(`${BASE_URL}/user/chat/list`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const existingChat = chatResponse.data.data.find((chat) => chat.id === existingChatId);
+          const existingChatProductId = existingChat?.chatProducts?.[0]?.id || null;
+          setChatProductId(existingChatProductId);
+          await fetchMessages(existingChatId);
+          setChatListCache(chatResponse.data.data); // Update cache
+          return existingChatId;
+        }
+
+        const errorMessage = err.response?.data?.message || err.message;
+        setChatError(`Failed to create chat: ${errorMessage}`);
+        console.error("Chat Creation Error:", errorMessage, err.response?.data);
+        return false;
+      } finally {
+        setIsChatLoading(false);
+      }
+    },
+    [checkExistingChat, fetchMessages, isChatLoading]
+  );
+
   const sendMessage = useCallback(
     async (chatId, messageText, proposedPrice = null) => {
       if (!chatId || !messageText.trim()) {
@@ -287,7 +298,7 @@ export function ChatProvider({ children }) {
         };
         if (proposedPrice !== null && proposedPrice !== undefined) {
           payload.proposedPrice = parseFloat(proposedPrice);
-          payload.chatProductId = chatProductId; // Include chatProductId when proposedPrice is provided
+          payload.chatProductId = chatProductId;
         }
 
         const response = await axios.post(
@@ -319,6 +330,7 @@ export function ChatProvider({ children }) {
                 : msg
             )
           );
+          setChatListCache(null); // Invalidate cache when a new message is sent
           return true;
         } else {
           throw new Error("Failed to send message");
@@ -335,6 +347,70 @@ export function ChatProvider({ children }) {
     },
     [chatProductId]
   );
+
+  const fetchChats = useCallback(async () => {
+    console.log("Fetching chats at:", new Date().toISOString());
+    setIsChatLoading(true);
+    setChatError(null);
+
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error("Authentication token missing");
+      }
+
+      if (chatListCache) {
+        setIsChatLoading(false);
+        return chatListCache.map((chat) => ({
+          id: chat.id,
+          participantId: chat.participantId,
+          participantType: chat.participantType,
+          chatType: chat.chatType,
+          productId: chat.chatProducts?.[0]?.product?.id,
+          chatProductId: chat.chatProducts?.[0]?.id || null,
+          varientId: chat.chatProducts?.[0]?.varientId,
+          inventoryId: chat.chatProducts?.[0]?.inventoryId,
+          productSeller: chat.store?.name,
+          productName:chat.chatProducts?.[0]?.product?.productLanguages?.[0]?.name
+
+        }));
+      }
+
+      const response = await axios.get(`${BASE_URL}/user/chat/list`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("API response fetch chats:", response);
+
+      if (response.data.success && Array.isArray(response.data.data)) {
+        setChatListCache(response.data.data);
+        return response.data.data.map((chat) => ({
+          id: chat.id,
+          participantId: chat.participantId,
+          participantType: chat.participantType,
+          chatType: chat.chatType,
+          productId: chat.chatProducts?.[0]?.product?.id,
+          chatProductId: chat.chatProducts?.[0]?.id || null,
+          varientId: chat.chatProducts?.[0]?.varientId,
+          inventoryId: chat.chatProducts?.[0]?.inventoryId,
+          productSeller: chat.store?.name,
+          productName:chat.chatProducts?.[0]?.product?.productLanguages?.[0]?.name
+        }));
+      } else {
+        throw new Error("No chats found or API call unsuccessful");
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message;
+      setChatError(`Failed to fetch chats: ${errorMessage}`);
+      console.error("Fetch Chats Error:", errorMessage, err.response?.data);
+      return [];
+    } finally {
+      setIsChatLoading(false);
+    }
+  }, [chatListCache]);
 
   const deleteMessage = useCallback(async (messageId) => {
     if (!messageId) {
@@ -356,6 +432,7 @@ export function ChatProvider({ children }) {
         },
       });
       setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      setChatListCache(null); // Invalidate cache when a message is deleted
       return true;
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message;
@@ -373,6 +450,9 @@ export function ChatProvider({ children }) {
     setChatError(null);
     setIsChatLoading(false);
     setIsSending(false);
+    setProductName(null);
+    setProductDescription(null);
+    setChatListCache(null); // Clear cache when resetting chat
   }, []);
 
   return (
@@ -390,6 +470,9 @@ export function ChatProvider({ children }) {
         sendMessage,
         deleteMessage,
         clearChat,
+        fetchChats,
+        productName,
+        productDescription,
       }}
     >
       {children}
