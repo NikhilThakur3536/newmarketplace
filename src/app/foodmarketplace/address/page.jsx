@@ -35,7 +35,7 @@ export default function Address() {
       <div className="max-w-md w-full flex flex-col gap-4 relative bg-white ">
         {/* Header */}
         <div className="w-full px-4 flex gap-4 py-3 bg-lightpink items-center">
-          <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={()=>router.push("/foodmarketplace")}/>
+          <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={()=>router.back()}/>
           <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
             Choose Delivery Address
           </span>
@@ -84,13 +84,6 @@ export default function Address() {
                 placeholder="Landmark"
                 value={formData.landmark || ""}
                 onChange={(e) => handleFormChange("landmark", e.target.value)}
-                className=" text-white p-2 rounded border border-gray-300"
-              />
-              <input
-                type="text"
-                placeholder="Mobile"
-                value={formData.mobile || ""}
-                onChange={(e) => handleFormChange("mobile", e.target.value)}
                 className=" text-white p-2 rounded border border-gray-300"
               />
               <input

@@ -47,6 +47,7 @@ export function CustomerAddressProvider({ children }) {
           customerAddressId: formData.customerAddressId || formData.id,
           name: formData.name,
           addressLine1: formData.addressLine1,
+          addressLine2:formData.addressLine2,
           landmark: formData.landmark,
           defaultAddress: formData.defaultAddress,
           label:formData.label
@@ -57,7 +58,6 @@ export function CustomerAddressProvider({ children }) {
           addressLine2: formData.addressLine2,
           road: formData.road,
           landmark: formData.landmark,
-          mobile: formData.mobile,
           defaultAddress: formData.defaultAddress,
           label: formData.label,
           latitude: formData.latitude,

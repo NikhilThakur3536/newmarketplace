@@ -69,13 +69,6 @@ export default function AddressCard() {
             />
             <input
               type="text"
-              placeholder="Mobile"
-              value={formData.mobile || ""}
-              onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-              className="p-2 rounded border border-gray-300"
-            />
-            <input
-              type="text"
               placeholder="Label"
               value={formData.label || ""}
               onChange={(e) => setFormData({ ...formData, label: e.target.value })}
