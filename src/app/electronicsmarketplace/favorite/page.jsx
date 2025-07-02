@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, Heart, Trash2 } from "lucide-react";
 import { useFavorite } from "@/app/context/FavouriteContext";
 import BottomNavigation from "@/app/components/electronicsmarketplcae/BottomNavigation";
