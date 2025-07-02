@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
+@plugin "tailwind-scrollbar-hide";
+
 @theme{
   --color-lightpink:#E72068;
   --color-black:#121826;
   --color-green:#8EE04E;
   --color-white:#FFFFFF;
   --color-darkgreen:#082104;
-}
+};

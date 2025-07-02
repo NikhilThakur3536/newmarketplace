@@ -60,6 +60,7 @@ export const CouponProvider = ({ children }) => {
         .map((coupon) => ({
           code: coupon.code || coupon.couponCode || "",
           discountAmount: Number(coupon.discount || coupon.amount || 0),
+          name:coupon.name,
         }));
       setCoupons(filteredCoupons);
       if (filteredCoupons.length === 0) {
