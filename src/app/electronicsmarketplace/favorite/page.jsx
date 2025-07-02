@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { ChevronLeft, Heart, Trash2 } from "lucide-react";
 import { useFavorite } from "@/app/context/FavouriteContext";
 import BottomNavigation from "@/app/components/electronicsmarketplcae/BottomNavigation";
@@ -16,7 +16,7 @@ export default function FavoritesPage() {
       productId: product.id,
       productVarientUomId: product.varients?.[0]?.productVarientUoms?.[0]?.id || "default-uom-id",
       name: product.productLanguages?.[0]?.name || "Unnamed Product",
-      isFavorite: true, // Indicate removal since item is already in favorites
+      isFavorite: true, 
     });
   };
 

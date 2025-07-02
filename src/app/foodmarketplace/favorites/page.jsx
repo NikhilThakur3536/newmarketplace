@@ -37,7 +37,7 @@ export default function Favorite() {
             size={20}
             strokeWidth={3}
             className="text-white cursor-pointer"
-            onClick={() => router.push("/foodmarketplace")}
+            onClick={() => router.back()}
           />
           <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
             Your Favorites

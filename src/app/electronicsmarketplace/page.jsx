@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useProduct } from "../context/ProductContext";
 import { useFavorite } from "../context/FavouriteContext";
-import { useLanguage } from "../context/LanguageContext"; // Import useLanguage hook
+import { useLanguage } from "../context/LanguageContext"; 
 import { useRouter } from "next/navigation";
-import { Menu, User, Search, Heart, Globe } from "lucide-react"; // Add Globe icon
+import { Menu, User, Search, Heart, Globe } from "lucide-react";
 import FilterModal from "../components/electronicsmarketplcae/FilterModal";
 import BottomNavigation from "../components/electronicsmarketplcae/BottomNavigation";
-import toast from "react-hot-toast";
 
 export default function HomePage() {
   const {
@@ -125,7 +124,7 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
-              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center" onClick={()=>router.push("/electronicsmarketplace/profile")}>
                 <User className="w-5 h-5 text-orange-600" />
               </div>
             </div>

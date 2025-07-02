@@ -185,7 +185,7 @@ export default function Cart() {
     <div className="min-h-screen flex justify-center bg-white">
       <div className="max-w-md w-full">
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-lightpink">
-          <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.push(lastRestaurantUrl)} />
+          <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.back()} />
           <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
             Cart
           </span>
