@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react";
-import { ChevronDown, MapPin, Search, Star, Timer, Truck } from "lucide-react";
+import { useState, Suspense } from "react";
+import { ChevronDown, Search } from "lucide-react";
 import { useLocation } from "../../context/LocationContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
@@ -11,10 +11,17 @@ import dynamic from "next/dynamic";
 import { useCategories } from "@/app/context/CategoryContext";
 import NewRestaurantCards from "@/app/components/foodmarketplace/NewRestaurantCards";
 
-// Define dynamic imports without rendering them immediately
-const loadCouponList = () => import("@/app/components/foodmarketplace/CouponList");
-const loadSelectionwiseProductCards = () => import("@/app/components/foodmarketplace/SelectionwiseProductCards");
-const loadPopularProductCards = () => import("@/app/components/foodmarketplace/ProductCards");
+// Dynamic imports with loading fallbacks
+const CouponList = dynamic(() => import("@/app/components/foodmarketplace/CouponList"), {
+  loading: () => <div>Loading Coupons...</div>,
+});
+const SelectionwiseProductCards = dynamic(
+  () => import("@/app/components/foodmarketplace/SelectionwiseProductCards"),
+  { loading: () => <div>Loading Selection Cards...</div> }
+);
+const PopularProductCards = dynamic(() => import("@/app/components/foodmarketplace/ProductCards"), {
+  loading: () => <div>Loading Popular Items...</div>,
+});
 
 export default function Home() {
   const { locations, selectedLocation, setSelectedLocation } = useLocation();
@@ -30,36 +37,7 @@ export default function Home() {
     }
     return null;
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [components, setComponents] = useState({
-    CouponList: null,
-    SelectionwiseProductCards: null,
-    PopularProductCards: null,
-  });
   const router = useRouter();
-
-  // Load all components simultaneously
-  useEffect(() => {
-    if (!categoryLoading && !languageLoading && locations.length > 0 && categories.length > 0) {
-      Promise.all([
-        loadCouponList().then((module) => module.default),
-        loadSelectionwiseProductCards().then((module) => module.default),
-        loadPopularProductCards().then((module) => module.default),
-      ])
-        .then(([CouponList, SelectionwiseProductCards, PopularProductCards]) => {
-          setComponents({
-            CouponList,
-            SelectionwiseProductCards,
-            PopularProductCards,
-          });
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error("Failed to load components:", error);
-          setIsLoading(false); // Handle error gracefully
-        });
-    }
-  }, [categoryLoading, languageLoading, locations, categories]);
 
   const handleLanguageSelect = (language) => {
     setSelectedLanguage(language.id);
@@ -67,15 +45,14 @@ export default function Home() {
     setLanguageDropdownOpen(false);
   };
 
-  if (isLoading || !components.CouponList) {
+  // Show loading state while contexts are loading
+  if (categoryLoading || languageLoading) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-black">
         <div>Loading...</div>
       </div>
     );
   }
-
-  const { CouponList, SelectionwiseProductCards, PopularProductCards } = components;
 
   return (
     <div className="min-h-screen flex justify-center bg-black">
@@ -153,7 +130,10 @@ export default function Home() {
           />
           <Search className="absolute right-4 top-2.5" fill="#D1BFE7" color="#D1BFE7" />
         </div>
-        <CouponList totalAmount={500} />
+        {/* Wrap dynamic components in Suspense */}
+        <Suspense fallback={<div>Loading Coupons...</div>}>
+          <CouponList totalAmount={500} />
+        </Suspense>
         <h1 className="font-bold text-xl">Category</h1>
         <div className="flex overflow-x-scroll gap-2 scrollbar-hide">
           {categories.map((cat) => (
@@ -168,19 +148,23 @@ export default function Home() {
               transition={{ duration: 0.3 }}
             >
               <div className="rounded-full relative w-6 h-6">
-                <Image src="/placeholder.jpg" alt="placeholder" fill className="object-cover rounded-full" />
+                <Image src="/burger.png" alt="placeholder" fill className="object-cover rounded-full" />
               </div>
               <h3 className="font-bold">{cat.code}</h3>
             </motion.div>
           ))}
         </div>
-        <SelectionwiseProductCards selectedCategoryId={selectedCategory} />
+        <Suspense fallback={<div>Loading Selection Cards...</div>}>
+          <SelectionwiseProductCards selectedCategoryId={selectedCategory} />
+        </Suspense>
         <h1 className="font-bold text-xl">Popular Items</h1>
-        <div className="w-full overflow-x-scroll gap-2 flex overflow-y-hidden scrollbar-hidden">
-          <PopularProductCards />
+        <div className="w-full overflow-x-scroll gap-4 flex overflow-y-hidden scrollbar-hidden px-4">
+          <Suspense fallback={<div>Loading Popular Items...</div>}>
+            <PopularProductCards />
+          </Suspense>
         </div>
         <h1 className="font-bold text-xl">Restaurants</h1>
-        <NewRestaurantCards searchQuery={searchQuery}/>
+        <NewRestaurantCards searchQuery={searchQuery} />
       </div>
     </div>
   );

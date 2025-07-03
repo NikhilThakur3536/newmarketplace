@@ -73,16 +73,16 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
       zIndex: 1,
       transition: {
         duration: 0.6,
-        ease: [0.4, 0, 0.2, 1], 
+        ease: [0.4, 0, 0.2, 1],
       },
     },
     center: {
       x: "0%",
-      scale: 0,
-      opacity: 0,
+      scale: 1.2,
+      opacity: 1,
       zIndex: 2,
       transition: {
-        duration: 1,
+        duration: 0.6,
         ease: [0.4, 0, 0.2, 1],
       },
     },
@@ -99,7 +99,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
     exit: (direction) => ({
       opacity: 0,
       transition: {
-        duration: 1,
+        duration: 0.6,
         ease: [0.4, 0, 0.2, 1],
       },
     }),
@@ -120,47 +120,65 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         >
           <div className="h-[60%] w-full rounded-t-lg relative">
             <Image
-              src="/placeholder.jpg"
+              src="/bagel.png"
               alt="product image"
               fill
               className="object-cover rounded-t-lg"
             />
             <button
               onClick={handlePrev}
-              className="absolute top-10 left-2 p-2 bg-black rounded-full shadow-md "
+              className="absolute top-10 left-2 p-2 bg-black rounded-full shadow-md"
             >
-              <ChevronLeft size={20} color="white"/>
+              <ChevronLeft size={20} color="white" />
             </button>
           </div>
           <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100 rounded-b-lg">
-            <span className="text-sm font-medium">
+            <span className="text-[0.7rem] font-medium">
               {categoryProducts[prevIndex].productLanguages?.[0]?.name}
             </span>
+            <p className="text-[0.4rem] text-gray-400">
+                {categoryProducts[prevIndex].productLanguages?.[0]?.longDescription}
+            </p>
+            <div className="w-full flex justify-between">
+                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
+                    ₹{categoryProducts[prevIndex].varients?.[0]?.productVarientUoms?.[0]?.inventory?.price}
+                </span>
+                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-200"> Add</span>
+            </div>
           </div>
         </motion.div>
 
         {/* Center Card */}
         <motion.div
           key={`${currentIndex}-center`}
-          className="w-[40%] h-56 rounded-lg flex flex-col relative"
+          className="w-[40%] h-56 rounded-lg flex flex-col relative overflow-hidden"
           variants={cardVariants}
           initial="center"
-          animate={{scale:1.2,opacity:1}}
+          animate="center"
           exit="exit"
           custom={direction}
         >
           <div className="h-[60%] w-full rounded-t-lg relative">
             <Image
-              src="/placeholder.jpg"
+              src="/bagel.png"
               alt="product image"
               fill
               className="object-cover rounded-t-lg"
             />
           </div>
-          <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100 rounded-b-lg">
-            <span className="text-base font-semibold">
+          <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100/50 rounded-b-lg ">
+            <span className="text-[0.7rem] font-semibold">
               {categoryProducts[currentIndex].productLanguages?.[0]?.name}
             </span>
+            <p className="text-[0.4rem] text-gray-400 line-clamp-2">
+                {categoryProducts[currentIndex].productLanguages?.[0]?.longDescription}
+            </p>
+            <div className="w-full flex justify-between">
+                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
+                    ₹{categoryProducts[currentIndex].varients?.[0]?.productVarientUoms?.[0]?.inventory?.price}
+                </span>
+                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-200"> Add</span>
+            </div>    
           </div>
         </motion.div>
 
@@ -176,22 +194,31 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         >
           <div className="h-[60%] w-full rounded-t-lg relative">
             <Image
-              src="/placeholder.jpg"
+              src="/bagel.png"
               alt="product image"
               fill
               className="object-cover rounded-t-lg"
             />
             <button
               onClick={handleNext}
-              className="absolute top-10 right-2 p-2 bg-black rounded-full shadow-md "
+              className="absolute top-10 right-2 p-2 bg-black rounded-full shadow-md"
             >
-              <ChevronRight size={20} color="white"/>
+              <ChevronRight size={20} color="white" />
             </button>
           </div>
           <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100 rounded-b-lg">
-            <span className="text-sm font-medium">
+            <span className="text-[0.7rem] font-medium">
               {categoryProducts[nextIndex].productLanguages?.[0]?.name}
             </span>
+            <p className="text-[0.4rem] text-gray-400">
+                {categoryProducts[nextIndex].productLanguages?.[0]?.longDescription}
+            </p>
+            <div className="w-full flex justify-between">
+                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
+                    ₹{categoryProducts[nextIndex].varients?.[0]?.productVarientUoms?.[0]?.inventory?.price}
+                </span>
+                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-200"> Add</span>
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
