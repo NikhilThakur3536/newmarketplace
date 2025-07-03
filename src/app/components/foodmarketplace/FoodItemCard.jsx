@@ -118,12 +118,6 @@ export default function FoodItemCard({ item }) {
 
     if (!productVarientUomId) {
       console.error("Invalid productVarientUomId:", item);
-      toast.custom(
-        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          Invalid item data: Missing product variant UOM ID
-        </div>,
-        { duration: 300 }
-      );
       return;
     }
 
@@ -141,21 +135,9 @@ export default function FoodItemCard({ item }) {
         })),
       };
       await addToCart(payload);
-      toast.custom(
-        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          {name} added to cart successfully
-        </div>,
-        { duration: 300 }
-      );
       handleClose();
     } catch (error) {
       console.error("Failed to add item to cart:", error.response?.data || error.message);
-      toast.custom(
-        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          Failed to add {name} to cart
-        </div>,
-        { duration: 300 }
-      );
     }
   };
 

@@ -106,12 +106,12 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
   };
 
   return (
-    <div className="w-full flex justify-center items-center gap-4 overflow-hidden mt-2 relative">
+    <div className="w-full flex justify-center items-center gap-2 overflow-hidden mt-2 relative">
       <AnimatePresence initial={false} mode="popLayout" custom={direction}>
         {/* Left Card */}
         <motion.div
           key={`${prevIndex}-left`}
-          className="w-[30%] h-48 rounded-lg flex flex-col relative"
+          className="w-[50%] h-48 rounded-lg flex flex-col relative"
           variants={cardVariants}
           initial="left"
           animate="left"
@@ -151,7 +151,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         {/* Center Card */}
         <motion.div
           key={`${currentIndex}-center`}
-          className="w-[40%] h-56 rounded-lg flex flex-col relative overflow-hidden"
+          className="w-[80%] h-56 rounded-lg flex flex-col relative overflow-hidden"
           variants={cardVariants}
           initial="center"
           animate="center"
@@ -170,7 +170,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
             <span className="text-[0.7rem] font-semibold">
               {categoryProducts[currentIndex].productLanguages?.[0]?.name}
             </span>
-            <p className="text-[0.4rem] text-gray-400 line-clamp-2">
+            <p className="text-[0.6rem] text-gray-400 line-clamp-2">
                 {categoryProducts[currentIndex].productLanguages?.[0]?.longDescription}
             </p>
             <div className="w-full flex justify-between">
@@ -185,7 +185,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         {/* Right Card */}
         <motion.div
           key={`${nextIndex}-right`}
-          className="w-[30%] h-48 rounded-lg flex flex-col relative"
+          className="w-[50%] h-48 rounded-lg flex flex-col relative"
           variants={cardVariants}
           initial="right"
           animate="right"

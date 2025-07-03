@@ -74,7 +74,7 @@ useEffect(() => {
           >
             <div className="w-[40%] relative h-full rounded-lg">
               <Image
-                src={store.coverImage || "/shop.jpg"}
+                src={store.coverImage || "/shop.png"}
                 alt={store.name}
                 fill
                 className="object-center rounded-tl-lg rounded-bl-lg"
