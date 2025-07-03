@@ -78,7 +78,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
     },
     center: {
       x: "0%",
-      scale: 1.2,
+      scale: 1,
       opacity: 1,
       zIndex: 2,
       transition: {

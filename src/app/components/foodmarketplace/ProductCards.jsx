@@ -16,7 +16,7 @@ export default function PopularProductCards() {
 
   // Animation for text to simulate moving along a path
   const textAnimation = {
-    hidden: { x: -50, opacity: 0 },
+    hidden: { x: -20, opacity: 0 },
     visible: {
       x: 0,
       opacity: 1,
@@ -59,7 +59,7 @@ export default function PopularProductCards() {
               whileInView="visible">
                 ₹{product.varients?.[0]?.productVarientUoms?.[0]?.inventory?.price || product.price || "N/A"}
               </motion.span>
-              <motion.button className="w-fit h-fit py-1 px-1 rounded-lg font-bold text-xs text-white bg-[#FEDDE7]"
+              <motion.button className="w-fit h-fit py-1 px-1 rounded-lg font-bold text-xs text-white bg-rose-200"
                 initial={{x:50,opacity:0}}
                 animate={{x:0,opacity:1}}
                 transition={{duration:0.3,dealy:0.6,ease:"easeInOut"}}
