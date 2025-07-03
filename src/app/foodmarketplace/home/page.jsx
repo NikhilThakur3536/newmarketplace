@@ -1,21 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, MapPin, Search, Star, Timer, Truck } from "lucide-react";
 import { useLocation } from "../../context/LocationContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import CouponList from "@/app/components/foodmarketplace/CouponList";
+import dynamic from "next/dynamic";
 import { useCategories } from "@/app/context/CategoryContext";
-import SelectionwiseProductCards from "@/app/components/foodmarketplace/SelectionwiseProductCards";
-import PopularProductCards from "@/app/components/foodmarketplace/ProductCards";
+import NewRestaurantCards from "@/app/components/foodmarketplace/NewRestaurantCards";
+
+// Define dynamic imports without rendering them immediately
+const loadCouponList = () => import("@/app/components/foodmarketplace/CouponList");
+const loadSelectionwiseProductCards = () => import("@/app/components/foodmarketplace/SelectionwiseProductCards");
+const loadPopularProductCards = () => import("@/app/components/foodmarketplace/ProductCards");
 
 export default function Home() {
   const { locations, selectedLocation, setSelectedLocation } = useLocation();
   const { categories, categoryLoading } = useCategories();
-  const { languages, loading: languageLoading, error } = useLanguage();
+  const { languages, loading: languageLoading } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -27,12 +31,33 @@ export default function Home() {
     return null;
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [components, setComponents] = useState({
+    CouponList: null,
+    SelectionwiseProductCards: null,
+    PopularProductCards: null,
+  });
   const router = useRouter();
 
-  // Wait for all data to be ready
+  // Load all components simultaneously
   useEffect(() => {
     if (!categoryLoading && !languageLoading && locations.length > 0 && categories.length > 0) {
-      setIsLoading(false);
+      Promise.all([
+        loadCouponList().then((module) => module.default),
+        loadSelectionwiseProductCards().then((module) => module.default),
+        loadPopularProductCards().then((module) => module.default),
+      ])
+        .then(([CouponList, SelectionwiseProductCards, PopularProductCards]) => {
+          setComponents({
+            CouponList,
+            SelectionwiseProductCards,
+            PopularProductCards,
+          });
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Failed to load components:", error);
+          setIsLoading(false); // Handle error gracefully
+        });
     }
   }, [categoryLoading, languageLoading, locations, categories]);
 
@@ -42,13 +67,15 @@ export default function Home() {
     setLanguageDropdownOpen(false);
   };
 
-  if (isLoading) {
+  if (isLoading || !components.CouponList) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-black">
         <div>Loading...</div>
       </div>
     );
   }
+
+  const { CouponList, SelectionwiseProductCards, PopularProductCards } = components;
 
   return (
     <div className="min-h-screen flex justify-center bg-black">
@@ -149,9 +176,11 @@ export default function Home() {
         </div>
         <SelectionwiseProductCards selectedCategoryId={selectedCategory} />
         <h1 className="font-bold text-xl">Popular Items</h1>
-        <div className="w-full overflow-x-scroll space-x-2 flex overflow-y-hidden scrollbar-hidden">
-            <PopularProductCards />
+        <div className="w-full overflow-x-scroll gap-2 flex overflow-y-hidden scrollbar-hidden">
+          <PopularProductCards />
         </div>
+        <h1 className="font-bold text-xl">Restaurants</h1>
+        <NewRestaurantCards searchQuery={searchQuery}/>
       </div>
     </div>
   );

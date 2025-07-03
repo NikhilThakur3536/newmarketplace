@@ -9,17 +9,27 @@ import { useCart } from "@/app/context/CartContext";
 export default function FoodNavBar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { cartCount, fetchCartItems } = useCart();
+  const { cartCount, fetchCartItems, isLoading } = useCart();
+
+  useEffect(() => {
+    console.log("FoodNavBar mounted, fetching cart items");
+    fetchCartItems(); // Fetch on mount to ensure latest cartCount
+  }, [fetchCartItems]);
 
   useEffect(() => {
     const handleCartUpdate = (e) => {
       if (e.detail?.marketplace === "foodmarketplace") {
+        console.log("cart-updated event received, cartCount:", cartCount);
         fetchCartItems();
       }
     };
     window.addEventListener("cart-updated", handleCartUpdate);
     return () => window.removeEventListener("cart-updated", handleCartUpdate);
-  }, [fetchCartItems]);
+  }, [fetchCartItems]); // Removed cartCount from dependencies
+
+  useEffect(() => {
+    console.log("cartCount updated:", cartCount); // Debug cartCount changes
+  }, [cartCount]);
 
   const icons = useMemo(
     () => [
@@ -81,7 +91,7 @@ export default function FoodNavBar() {
               fill={isActive ? "white" : "#E72068"}
               color={isActive ? "white" : "#E72068"}
             />
-            {cartCount > 0 && (
+            {cartCount > 0 && !isLoading && (
               <span
                 className="absolute -top-2 -right-2 bg-lightpink text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
                 data-testid="cart-count"
@@ -104,7 +114,7 @@ export default function FoodNavBar() {
         ),
       },
     ],
-    []
+    [cartCount, isLoading] // Added cartCount and isLoading as dependencies
   );
 
   return (

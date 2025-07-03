@@ -9,7 +9,7 @@ export default function RootLayout({ children }) {
   return (
    <>
           <div className="max-w-md mx-auto bg-white min-h-screen relative overflow-hidden">
-            <ProductProvider>
+            <ProductProvider marketplace="electronicsmarketplace">
               <OrderProvider marketplace={"electronics"}>
               <ChatProvider>
                 <FavoriteProvider marketplace={"electronicsmarketplace"}>

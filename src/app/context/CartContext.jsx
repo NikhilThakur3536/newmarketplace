@@ -31,7 +31,14 @@ const apiMap = {
 };
 
 export const CartProvider = ({ children, marketplace = "foodmarketplace" }) => {
-  const [cartCount, setCartCount] = useState(0);
+  const [cartCount, setCartCount] = useState(() => {
+    // Initialize cartCount from localStorage
+    if (typeof window !== "undefined") {
+      const savedCount = localStorage.getItem(`cartCount_${marketplace}`);
+      return savedCount ? parseInt(savedCount, 10) : 0;
+    }
+    return 0;
+  });
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastCartHash, setLastCartHash] = useState(null);

@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { useFavorite } from "@/app/context/FavouriteContext";
 import { useEffect } from "react";
 import FavItemCard from "@/app/components/foodmarketplace/FavItemCards";
+import dynamic from "next/dynamic";
+
+const FoodNavBar = dynamic(() => import("@/app/components/foodmarketplace/NavBar"), {
+  ssr: false,
+});
 
 export default function Favorite() {
   const router = useRouter();
@@ -77,6 +82,9 @@ export default function Favorite() {
             {showPopup.message}
           </div>
         )}
+        <div className="max-w-md w-full fixed bottom-0 mt-12">
+          <FoodNavBar/>
+        </div>
       </div>
     </div>
   );

@@ -3,10 +3,14 @@
 import { Search, UserRound } from "lucide-react";
 import CategoryTabs from "../components/foodmarketplace/CategoryTabs";
 import FoodHeader from "../components/foodmarketplace/Header";
-import FoodNavBar from "../components/foodmarketplace/NavBar";
 import { CategoryProvider } from "../context/CategoryContext";
 import StoreList from "../components/foodmarketplace/StoreList";
+import dynamic from "next/dynamic";
 import { useState } from "react";
+
+const FoodNavBar = dynamic(() => import("@/app/components/foodmarketplace/NavBar"), {
+  ssr: false,
+});
 
 export default function FoodMarketPlace() {
   const [searchQuery, setSearchQuery] = useState("");

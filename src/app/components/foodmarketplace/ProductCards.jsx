@@ -8,9 +8,9 @@ export default function PopularProductCards() {
   const { popularProducts, fetchPopularProducts, loading, error } = useProduct();
 
   
-  useEffect(() => {
-    fetchPopularProducts();
-  }, []);
+//   useEffect(() => {
+//     fetchPopularProducts();
+//   }, []);
   
 
   console.log("Popular food products:", popularProducts);
@@ -23,7 +23,7 @@ export default function PopularProductCards() {
   return (
     <>
       {popularProducts.map((product) => (
-        <div key={product.id} className="h-52 flex flex-col rounded-lg">
+        <div key={product.id} className="h-52 flex flex-col rounded-lg  bg-gray-100 ">
           <div className="h-[50%] relative rounded-t-lg">
             <Image
               src={product.image || "/placeholder.jpg"}

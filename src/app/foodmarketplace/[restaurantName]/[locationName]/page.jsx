@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, createContext, useContext } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import {
   ChevronDown,
@@ -10,9 +10,10 @@ import {
   MapPin,
   Search,
   SlidersHorizontal,
+  ShoppingCart,
 } from "lucide-react";
 import FoodItemCard from "@/app/components/foodmarketplace/FoodItemCard";
-import { useRouter } from "next/navigation";
+import { useCart } from "@/app/context/CartContext";
 
 const MenuContext = createContext();
 
@@ -42,11 +43,12 @@ export default function RestaurantPage() {
   const [expandedCategories, setExpandedCategories] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const { cartCount } = useCart();
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const lang= localStorage.getItem("selectedLanguage")
+    const lang = localStorage.getItem("selectedLanguage");
 
     async function fetchMenu() {
       try {
@@ -62,15 +64,10 @@ export default function RestaurantPage() {
 
         const stores = storeRes.data.data.rows;
 
-        // console.log("restaurantName from URL:", restaurantName);
-        // console.log("locationName from URL:", locationName);
-
         const matchedStore = stores.find((store) => {
           const slugName = store.name.toLowerCase().replace(/\s+/g, "-");
           const slugLocationName = store.location?.name?.toLowerCase().replace(/\s+/g, "-");
           const slugLocationAddress = store.location?.address?.toLowerCase().replace(/,/g, "").replace(/\s+/g, "-");
-
-          // console.log("Checking store:", slugName, slugLocationName, slugLocationAddress);
 
           return (
             slugName === restaurantName.toLowerCase() &&
@@ -89,7 +86,6 @@ export default function RestaurantPage() {
 
         const storeId = matchedStore.id;
 
-        // Build payload conditionally
         const payload = {
           limit: 4000,
           offset: 0,
@@ -97,7 +93,6 @@ export default function RestaurantPage() {
           languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558",
         };
 
-        // Only include searchKey if searchQuery is not empty
         if (searchQuery.trim() !== "") {
           payload.searchKey = searchQuery;
         }
@@ -113,14 +108,12 @@ export default function RestaurantPage() {
         );
 
         if (res.data.success) {
-          // console.log("items structured",res.data.data.rows)
           const structured = formatCategories(res.data.data.rows);
           setCategoriesData(structured);
           const initialExpanded = Object.keys(structured).reduce((acc, cat) => {
             acc[cat] = true;
             return acc;
           }, {});
-          // console.log("initial expanded",initialExpanded)
           setExpandedCategories(initialExpanded);
         } else {
           console.warn("Failed to fetch products");
@@ -145,11 +138,24 @@ export default function RestaurantPage() {
       <div className="flex justify-center min-h-screen overflow-x-hidden">
         <div className="max-w-md w-full flex flex-col relative bg-white min-h-screen overflow-x-hidden">
           {/* Header */}
-          <div className="fixed w-full max-w-md px-4 flex gap-4 py-3 bg-lightpink items-center z-30">
-            <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.push("/foodmarketplace")} />
-            <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
-              {unslugify(restaurantName)}
-            </span>
+          <div className="fixed w-full max-w-md px-4 flex gap-4 py-3 bg-lightpink items-center justify-between z-30">
+            <div className="flex items-center gap-4">
+              <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.push("/foodmarketplace")} />
+              <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
+                {unslugify(restaurantName)}
+              </span>
+            </div>
+            <button
+              onClick={() => router.push("/foodmarketplace/cart")}
+              className="relative flex items-center"
+            >
+              <ShoppingCart size={20} strokeWidth={2} className="text-white" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Info */}
