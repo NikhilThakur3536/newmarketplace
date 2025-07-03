@@ -7,6 +7,7 @@ import { OrderProvider } from "../context/OrderContext";
 import { FavoriteProvider } from "../context/FavouriteContext";
 import { CartProvider } from "../context/CartContext";
 import { CategoryProvider } from "../context/CategoryContext";
+import { ProductProvider } from "../context/ProductContext";
 
 export default function RootLayout({ children }) {
   return (
@@ -17,7 +18,9 @@ export default function RootLayout({ children }) {
             <CartProvider marketplace={"foodmarketplace"}>
             <FavoriteProvider marketplace={"foodmarketplace"}>
               <CategoryProvider>
+                <ProductProvider marketplace="foodmarketplace">
           {children}
+          </ProductProvider>
           </CategoryProvider>
           </FavoriteProvider>
           </CartProvider>

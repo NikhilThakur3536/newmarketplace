@@ -1,14 +1,16 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const ProductContext = createContext();
 export const useProduct = () => useContext(ProductContext);
 
-export const ProductProvider = ({ children }) => {
+export const ProductProvider = ({ children, marketplace = "electronicsmarketplace" }) => {
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
   const [products, setProducts] = useState([]);
+  const [popularProducts, setPopularProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchKey, setSearchKey] = useState("");
@@ -33,19 +35,19 @@ export const ProductProvider = ({ children }) => {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/user/category/list`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ limit: 20, offset: 0, languageId: language }),
-      });
-      const data = await res.json();
+      const response = await axios.post(
+        `${BASE_URL}/user/category/list`,
+        { limit: 20, offset: 0, languageId: language },
+        { headers: getAuthHeaders() }
+      );
+      const data = response.data;
       if (data.success) {
-        setCategories(data.data.rows);
+        setCategories(data.data.rows || []);
       } else {
-        setError("Failed to fetch categories");
+        setError(`Failed to fetch categories for ${marketplace} marketplace`);
       }
-    } catch {
-      setError("Error fetching categories");
+    } catch (err) {
+      setError(`Error fetching categories for ${marketplace} marketplace: ${err.message}`);
     }
   };
 
@@ -57,62 +59,114 @@ export const ProductProvider = ({ children }) => {
     const offset = (currentPage - 1) * limit;
     try {
       setLoading(true);
-
       const body = {
         limit,
         offset,
         languageId: language,
       };
-
       if (categoryIds && categoryIds.length > 0) {
         body.categoryIds = categoryIds;
       }
-
       if (search && search.trim() !== "") {
         body.searchKey = search.trim();
       }
-
-      const res = await fetch(`${BASE_URL}/user/product/listv2`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json();
+      const endpoint = marketplace === "foodmarketplace" ? "listv1" : "listv2";
+      const response = await axios.post(
+        `${BASE_URL}/user/product/${endpoint}`,
+        body,
+        { headers: getAuthHeaders() }
+      );
+      const data = response.data;
       if (data.success) {
         setProducts(
-          data.data.rows.map((product) => ({
+          (data.data.rows || []).map((product) => ({
             id: product.id,
-            name: product.productLanguages[0]?.name || "Unnamed Product",
-            price: product.varients?.[0]?.inventory?.price || 0,
-            image: product.productImages[0]?.url || "/placeholder.svg",
+            name: product.productLanguages?.[0]?.name || "Unnamed Product",
+            price: product.varients?.[0]?.inventory?.price || product.variants?.[0]?.inventory?.price || 0,
+            image: product.productImages?.[0]?.url || "/placeholder.svg",
             categoryId: product.categoryId,
-            productVarientUomId: product.varients?.[0]?.id,
+            productVarientUomId: product.varients?.[0]?.id || product.variants?.[0]?.id,
+            productLanguages: product.productLanguages || [],
+            varients: product.varients || product.variants || [],
           }))
         );
         setTotalCount(data.data.count || 0);
       } else {
-        setError("Failed to fetch products");
+        setError(`Failed to fetch products for ${marketplace} marketplace`);
       }
-    } catch {
-      setError("Error fetching products");
+    } catch (err) {
+      setError(`Error fetching products for ${marketplace} marketplace: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Watch for language changes
+  const fetchPopularProducts = async () => {
+    if (marketplace !== "foodmarketplace") return;
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/user/product/listv1`,
+        {
+          limit: 10,
+          offset: 0,
+          languageId: language,
+        },
+        { headers: getAuthHeaders() }
+      );
+      const data = response.data;
+      if (data.success) {
+        setPopularProducts(
+          (data.data.rows || []).map((product) => ({
+            id: product.id,
+            name: product.productLanguages?.[0]?.name || "Unnamed Product",
+            price: product.varients?.[0]?.inventory?.price || product.variants?.[0]?.inventory?.price || 0,
+            image: product.productImages?.[0]?.url || "/placeholder.svg",
+            categoryId: product.categoryId,
+            productVarientUomId: product.varients?.[0]?.id || product.variants?.[0]?.id,
+            productLanguages: product.productLanguages || [],
+            varients: product.varients || product.variants || [],
+          }))
+        );
+      } else {
+        setError("Failed to fetch popular products for food marketplace");
+      }
+    } catch (err) {
+      setError(`Error fetching popular products for food marketplace: ${err.message}`);
+    }
+  };
+
+  const addToCart = async (productId, productVarientUomId) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/cart/add`,
+        {
+          productId,
+          productVarientUomId,
+          quantity: 1,
+        },
+        { headers: getAuthHeaders() }
+      );
+      const data = response.data;
+      if (!data.success) {
+        setError(`Failed to add product to cart: ${data.message || "Unknown error"}`);
+      }
+      return data;
+    } catch (err) {
+      setError(`Error adding product to cart: ${err.message}`);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
     fetchProducts();
-  }, [language]);
+    fetchPopularProducts();
+  }, [language, marketplace]);
 
-  // Also refetch on other triggers
   useEffect(() => {
     fetchProducts(selectedCategories, searchKey, page);
   }, [page, searchKey, selectedCategories]);
 
-  // Listen to localStorage changes (e.g., another tab changed language)
   useEffect(() => {
     const handleStorageChange = () => {
       const newLang = localStorage.getItem("selectedLanguage");
@@ -120,23 +174,23 @@ export const ProductProvider = ({ children }) => {
         setLanguage(newLang);
       }
     };
-
     window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [language]);
 
   return (
     <ProductContext.Provider
       value={{
         products,
+        popularProducts,
         categories,
         selectedCategories,
         setSelectedCategories,
         searchKey,
         setSearchKey,
         fetchProducts,
+        fetchPopularProducts,
+        addToCart,
         page,
         setPage,
         limit,
@@ -144,7 +198,7 @@ export const ProductProvider = ({ children }) => {
         loading,
         error,
         language,
-        setLanguage, // Expose this so you can change language manually
+        setLanguage,
       }}
     >
       {children}

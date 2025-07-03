@@ -125,13 +125,13 @@ export default function CouponList({ totalAmount }) {
       <div className="flex w-full justify-between gap-4 mt-4">
         <button
           onClick={handlePrev}
-          className="bg-white/80 p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="bg-white/80 border border-gray-200 shadow-md p-2 rounded-full hover:bg-gray-100 transition-colors"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={handleNext}
-          className="bg-white/80 p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="bg-white/80 border border-gray-200 shadow-md p-2 rounded-full hover:bg-gray-100 transition-colors"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
