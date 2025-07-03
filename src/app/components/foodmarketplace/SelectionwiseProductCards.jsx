@@ -243,7 +243,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
             </button>
           </div>
           <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100 rounded-b-lg">
-            <span className="text-[0.7rem] font-medium">
+            <span className="text-[0.7rem] font-medium line-clamp-1">
               {categoryProducts[nextIndex]?.productLanguages?.[0]?.name || "N/A"}
             </span>
             <p className="text-[0.4rem] text-gray-400">
