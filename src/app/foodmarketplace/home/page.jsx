@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect, Component } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { useLocation } from "../../context/LocationContext";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -9,24 +9,56 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useCategories } from "@/app/context/CategoryContext";
+import { Skeleton } from "@/app/components/ui/skeleton";
 import NewRestaurantCards from "@/app/components/foodmarketplace/NewRestaurantCards";
+
+// Error Boundary
+class ErrorBoundary extends Component {
+  state = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("Error in component:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div>Error: {this.state.error.message}</div>;
+    }
+    return this.props.children;
+  }
+}
+
+// Wrapper component to track loading state
+const LoadTracker = ({ children, onLoad, name }) => {
+  useEffect(() => {
+    console.log(`${name} LoadTracker mounted, calling onLoad`);
+    onLoad();
+  }, [onLoad, name]);
+  return <>{children}</>;
+};
 
 // Dynamic imports with loading fallbacks
 const CouponList = dynamic(() => import("@/app/components/foodmarketplace/CouponList"), {
-  loading: () => <div>Loading Coupons...</div>,
+  loading: () => <Skeleton className="h-32 w-full rounded-xl" />,
+  ssr: false,
 });
 const SelectionwiseProductCards = dynamic(
   () => import("@/app/components/foodmarketplace/SelectionwiseProductCards"),
-  { loading: () => <div>Loading Selection Cards...</div> }
+  { loading: () => <Skeleton className="h-48 w-full rounded-xl" />, ssr: false }
 );
 const PopularProductCards = dynamic(() => import("@/app/components/foodmarketplace/ProductCards"), {
-  loading: () => <div>Loading Popular Items...</div>,
+  loading: () => <Skeleton className="h-64 w-full rounded-xl" />,
+  ssr: false,
 });
 
 export default function Home() {
   const { locations, selectedLocation, setSelectedLocation } = useLocation();
-  const { categories, categoryLoading } = useCategories();
-  const { languages, loading: languageLoading } = useLanguage();
+  const { categories, categoryLoading = false } = useCategories();
+  const { languages, loading: languageLoading = false } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -37,6 +69,11 @@ export default function Home() {
     }
     return null;
   });
+  const [componentLoading, setComponentLoading] = useState({
+    couponList: true,
+    selectionCards: true,
+    popularCards: true,
+  });
   const router = useRouter();
 
   const handleLanguageSelect = (language) => {
@@ -45,11 +82,88 @@ export default function Home() {
     setLanguageDropdownOpen(false);
   };
 
-  // Show loading state while contexts are loading
-  if (categoryLoading || languageLoading) {
+ const handleComponentLoad = (component) => {
+  console.log(`${component} loaded, updating componentLoading`);
+  setComponentLoading((prev) => {
+    if (prev[component]) {
+      const newState = { ...prev, [component]: false };
+      console.log("New componentLoading:", newState);
+      return newState;
+    }
+    return prev; 
+  });
+};
+
+  useEffect(() => {
+    console.log("componentLoading:", componentLoading);
+    console.log("categoryLoading:", categoryLoading, "languageLoading:", languageLoading);
+  }, [componentLoading, categoryLoading, languageLoading]);
+
+  const isLoading =
+    (categoryLoading || false) ||
+    (languageLoading || false) ||
+    componentLoading.couponList ||
+    componentLoading.selectionCards ||
+    componentLoading.popularCards;
+  console.log("isLoading:", isLoading);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      console.warn("Forcing componentLoading to false due to timeout");
+      setComponentLoading({
+        couponList: false,
+        selectionCards: false,
+        popularCards: false,
+      });
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-black">
-        <div>Loading...</div>
+      <div className="min-h-screen flex justify-center bg-black">
+        <div className="max-w-md w-full px-4 pt-4 bg-white flex flex-col gap-4">
+          {/* Header Skeleton */}
+          <div className="w-full flex items-center justify-between">
+            <div className="w-[60%] flex flex-col gap-2">
+              <Skeleton className="h-8 w-3/4 rounded-full" />
+              <Skeleton className="h-4 w-1/2 rounded" />
+            </div>
+            <Skeleton className="h-6 w-6 rounded-full" />
+          </div>
+          {/* Title Skeleton */}
+          <Skeleton className="h-10 w-[65%] rounded" />
+          {/* Search Bar Skeleton */}
+          <Skeleton className="h-12 w-full rounded-xl" />
+          {/* Coupon Section Skeleton */}
+          <Skeleton className="h-32 w-full rounded-xl" />
+          {/* Category Title Skeleton */}
+          <Skeleton className="h-6 w-1/4 rounded" />
+          {/* Categories Skeleton */}
+          <div className="flex gap-2">
+            {[...Array(4)].map((_, index) => (
+              <Skeleton key={index} className="h-12 w-24 rounded-2xl" />
+            ))}
+          </div>
+          {/* Selection Cards Skeleton */}
+          <Skeleton className="h-48 w-full rounded-xl" />
+          {/* Popular Items Title Skeleton */}
+          <Skeleton className="h-6 w-1/4 rounded" />
+          {/* Popular Items Skeleton */}
+          <div className="flex gap-4">
+            {[...Array(3)].map((_, index) => (
+              <Skeleton key={index} className="h-64 w-40 rounded-xl" />
+            ))}
+          </div>
+          {/* Restaurants Title Skeleton */}
+          <Skeleton className="h-6 w-1/4 rounded" />
+          {/* Restaurants Skeleton */}
+          <div className="flex flex-col gap-4">
+            {[...Array(2)].map((_, index) => (
+              <Skeleton key={index} className="h-24 w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -130,9 +244,13 @@ export default function Home() {
           />
           <Search className="absolute right-4 top-2.5" fill="#D1BFE7" color="#D1BFE7" />
         </div>
-        {/* Wrap dynamic components in Suspense */}
-        <Suspense fallback={<div>Loading Coupons...</div>}>
-          <CouponList totalAmount={500} />
+        {/* Wrap dynamic components in Suspense with LoadTracker */}
+        <Suspense fallback={<Skeleton className="h-32 w-full rounded-xl" />}>
+          <ErrorBoundary>
+            <LoadTracker name="CouponList" onLoad={() => handleComponentLoad("couponList")}>
+              <CouponList totalAmount={500} />
+            </LoadTracker>
+          </ErrorBoundary>
         </Suspense>
         <h1 className="font-bold text-xl">Category</h1>
         <div className="flex overflow-x-scroll gap-2 scrollbar-hide">
@@ -154,13 +272,21 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
-        <Suspense fallback={<div>Loading Selection Cards...</div>}>
-          <SelectionwiseProductCards selectedCategoryId={selectedCategory} />
+        <Suspense fallback={<Skeleton className="h-48 w-full rounded-xl" />}>
+          <ErrorBoundary>
+            <LoadTracker name="SelectionwiseProductCards" onLoad={() => handleComponentLoad("selectionCards")}>
+              <SelectionwiseProductCards selectedCategoryId={selectedCategory} />
+            </LoadTracker>
+          </ErrorBoundary>
         </Suspense>
         <h1 className="font-bold text-xl">Popular Items</h1>
         <div className="w-full overflow-x-scroll gap-4 flex overflow-y-hidden scrollbar-hidden px-4">
-          <Suspense fallback={<div>Loading Popular Items...</div>}>
-            <PopularProductCards />
+          <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+            <ErrorBoundary>
+              <LoadTracker name="PopularProductCards" onLoad={() => handleComponentLoad("popularCards")}>
+                <PopularProductCards />
+              </LoadTracker>
+            </ErrorBoundary>
           </Suspense>
         </div>
         <h1 className="font-bold text-xl">Restaurants</h1>

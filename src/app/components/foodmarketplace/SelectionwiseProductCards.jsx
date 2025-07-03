@@ -11,9 +11,13 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true); // Set loading to true on fetch start
+      setError(null); // Reset error
       try {
         const token = localStorage.getItem("token");
         const payload = {
@@ -34,8 +38,12 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         );
 
         setCategoryProducts(response.data?.data?.rows || []);
+        console.log("Products fetched:", response.data?.data?.rows);
       } catch (error) {
         console.error("Error fetching products:", error);
+        setError("Failed to load products. Please try again.");
+      } finally {
+        setLoading(false); // Set loading to false regardless of success or failure
       }
     };
 
@@ -56,14 +64,21 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
     );
   };
 
-  if (!categoryProducts || categoryProducts.length === 0) {
-    return <div>Loading...</div>;
+  // Show loading or error state
+  if (loading) {
+    return <div>Loading products...</div>;
   }
 
-  const prevIndex =
-    currentIndex === 0 ? categoryProducts.length - 1 : currentIndex - 1;
-  const nextIndex =
-    currentIndex === categoryProducts.length - 1 ? 0 : currentIndex + 1;
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  if (!categoryProducts || categoryProducts.length === 0) {
+    return <div>No products available</div>;
+  }
+
+  const prevIndex = currentIndex === 0 ? categoryProducts.length - 1 : currentIndex - 1;
+  const nextIndex = currentIndex === categoryProducts.length - 1 ? 0 : currentIndex + 1;
 
   const cardVariants = {
     left: {
@@ -120,7 +135,10 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         >
           <div className="h-[60%] w-full rounded-t-lg relative">
             <Image
-              src="/bagel.png"
+              src={
+                categoryProducts[prevIndex]?.productImages?.[0]?.imageUrl ||
+                "/bagel.png"
+              }
               alt="product image"
               fill
               className="object-cover rounded-t-lg"
@@ -134,16 +152,22 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
           </div>
           <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100 rounded-b-lg">
             <span className="text-[0.7rem] font-medium">
-              {categoryProducts[prevIndex].productLanguages?.[0]?.name}
+              {categoryProducts[prevIndex]?.productLanguages?.[0]?.name || "N/A"}
             </span>
             <p className="text-[0.4rem] text-gray-400">
-                {categoryProducts[prevIndex].productLanguages?.[0]?.longDescription}
+              {categoryProducts[prevIndex]?.productLanguages?.[0]?.longDescription ||
+                "No description"}
             </p>
             <div className="w-full flex justify-between">
-                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
-                    ₹{categoryProducts[prevIndex].varients?.[0]?.productVarientUoms?.[0]?.inventory?.price}
-                </span>
-                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-200"> Add</span>
+              <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
+                ₹{
+                  categoryProducts[prevIndex]?.varients?.[0]?.productVarientUoms?.[0]
+                    ?.inventory?.price || 0
+                }
+              </span>
+              <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-400">
+                Add
+              </span>
             </div>
           </div>
         </motion.div>
@@ -160,25 +184,34 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         >
           <div className="h-[60%] w-full rounded-t-lg relative">
             <Image
-              src="/bagel.png"
+              src={
+                categoryProducts[currentIndex]?.productImages?.[0]?.imageUrl ||
+                "/bagel.png"
+              }
               alt="product image"
               fill
               className="object-cover rounded-t-lg"
             />
           </div>
-          <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100/50 rounded-b-lg ">
+          <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100/50 rounded-b-lg">
             <span className="text-[0.7rem] font-semibold">
-              {categoryProducts[currentIndex].productLanguages?.[0]?.name}
+              {categoryProducts[currentIndex]?.productLanguages?.[0]?.name || "N/A"}
             </span>
             <p className="text-[0.6rem] text-gray-400 line-clamp-2">
-                {categoryProducts[currentIndex].productLanguages?.[0]?.longDescription}
+              {categoryProducts[currentIndex]?.productLanguages?.[0]
+                ?.longDescription || "No description"}
             </p>
             <div className="w-full flex justify-between">
-                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
-                    ₹{categoryProducts[currentIndex].varients?.[0]?.productVarientUoms?.[0]?.inventory?.price}
-                </span>
-                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-200"> Add</span>
-            </div>    
+              <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
+                ₹{
+                  categoryProducts[currentIndex]?.varients?.[0]?.productVarientUoms?.[0]
+                    ?.inventory?.price || 0
+                }
+              </span>
+              <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-400">
+                Add
+              </span>
+            </div>
           </div>
         </motion.div>
 
@@ -194,7 +227,10 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         >
           <div className="h-[60%] w-full rounded-t-lg relative">
             <Image
-              src="/bagel.png"
+              src={
+                categoryProducts[nextIndex]?.productImages?.[0]?.imageUrl ||
+                "/bagel.png"
+              }
               alt="product image"
               fill
               className="object-cover rounded-t-lg"
@@ -208,16 +244,22 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
           </div>
           <div className="h-[40%] w-full px-2 py-1 flex flex-col gap-1 bg-gray-100 rounded-b-lg">
             <span className="text-[0.7rem] font-medium">
-              {categoryProducts[nextIndex].productLanguages?.[0]?.name}
+              {categoryProducts[nextIndex]?.productLanguages?.[0]?.name || "N/A"}
             </span>
             <p className="text-[0.4rem] text-gray-400">
-                {categoryProducts[nextIndex].productLanguages?.[0]?.longDescription}
+              {categoryProducts[nextIndex]?.productLanguages?.[0]?.longDescription ||
+                "No description"}
             </p>
             <div className="w-full flex justify-between">
-                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
-                    ₹{categoryProducts[nextIndex].varients?.[0]?.productVarientUoms?.[0]?.inventory?.price}
-                </span>
-                <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-200"> Add</span>
+              <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm font-bold">
+                ₹{
+                  categoryProducts[nextIndex]?.varients?.[0]?.productVarientUoms?.[0]
+                    ?.inventory?.price || 0
+                }
+              </span>
+              <span className="text-[0.5rem] w-fit h-fit py-0.5 px-2 rounded-sm bg-rose-400">
+                Add
+              </span>
             </div>
           </div>
         </motion.div>
