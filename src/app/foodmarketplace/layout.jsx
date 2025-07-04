@@ -8,9 +8,12 @@ import { FavoriteProvider } from "../context/FavouriteContext";
 import { CartProvider } from "../context/CartContext";
 import { CategoryProvider } from "../context/CategoryContext";
 import { ProductProvider } from "../context/ProductContext";
+import { ChatProvider } from "../context/ChatContext";
+import { AuthProvider } from "../context/AuthContext";
 
 export default function RootLayout({ children }) {
   return (
+    <AuthProvider marketplace={"foodmarketplace"}>
     <CustomerAddressProvider>
       <LocationProvider>
         <CouponProvider>
@@ -19,7 +22,9 @@ export default function RootLayout({ children }) {
             <FavoriteProvider marketplace={"foodmarketplace"}>
               <CategoryProvider>
                 <ProductProvider marketplace="foodmarketplace">
+                  <ChatProvider>
           {children}
+          </ChatProvider>
           </ProductProvider>
           </CategoryProvider>
           </FavoriteProvider>
@@ -28,6 +33,7 @@ export default function RootLayout({ children }) {
         </CouponProvider>
       </LocationProvider>
     </CustomerAddressProvider>
+    </AuthProvider>
   );
 }
   

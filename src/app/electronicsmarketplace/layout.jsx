@@ -5,10 +5,12 @@ import { FavoriteProvider } from "../context/FavouriteContext"
 import { CouponProvider } from "../context/CouponContext"
 import { OrderProvider } from "../context/OrderContext"
 import { CustomerAddressProvider } from "../context/CustomerAddressContext"
+import { AuthProvider } from "../context/AuthContext"
 export default function RootLayout({ children }) {
   return (
    <>
           <div className="max-w-md mx-auto bg-white min-h-screen relative overflow-hidden">
+            <AuthProvider marketplace={"electronicsmarketplace"}>
             <ProductProvider marketplace="electronicsmarketplace">
               <OrderProvider marketplace={"electronics"}>
               <ChatProvider>
@@ -24,6 +26,7 @@ export default function RootLayout({ children }) {
                 </ChatProvider>
                 </OrderProvider>
             </ProductProvider>    
+            </AuthProvider>
           </div>
     </>  
   )

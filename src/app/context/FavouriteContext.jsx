@@ -32,7 +32,7 @@ export const FavoriteProvider = ({ children, marketplace }) => {
       });
       setTimeout(() => {
         setShowPopup(null);
-        router.push(`/${marketplace}/login`);
+        // router.push(`/${marketplace}/login`);
       }, 2000);
       return;
     }

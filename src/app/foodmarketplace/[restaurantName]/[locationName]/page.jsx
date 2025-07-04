@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { useEffect, useState, createContext, useContext } from "react";
-import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
+import { useEffect, useState, createContext, useContext } from "react"
+import { useParams } from "next/navigation"
+import axios from "axios"
 import {
   ChevronDown,
   ChevronLeft,
@@ -11,44 +11,51 @@ import {
   Search,
   SlidersHorizontal,
   ShoppingCart,
-} from "lucide-react";
-import FoodItemCard from "@/app/components/foodmarketplace/FoodItemCard";
-import { useCart } from "@/app/context/CartContext";
+  MessageCircle,
+  X,
+} from "lucide-react"
+import FoodItemCard from "@/app/components/foodmarketplace/FoodItemCard"
+import { useCart } from "@/app/context/CartContext"
+import { useChat } from "@/app/context/ChatContext"
+import MobileChatUI from "@/app/components/foodmarketplace/ChatInterface"
 
-const MenuContext = createContext();
+const MenuContext = createContext()
 
 export function useMenu() {
-  return useContext(MenuContext);
+  return useContext(MenuContext)
 }
 
 function formatCategories(products) {
-  const categoriesMap = {};
+  const categoriesMap = {}
   products.forEach((product) => {
-    const category = product.category?.categoryLanguages?.[0]?.name || "Other";
-    if (!categoriesMap[category]) categoriesMap[category] = [];
-    categoriesMap[category].push(product);
-  });
-  return categoriesMap;
+    const category = product.category?.categoryLanguages?.[0]?.name || "Other"
+    if (!categoriesMap[category]) categoriesMap[category] = []
+    categoriesMap[category].push(product)
+  })
+  return categoriesMap
 }
 
 function unslugify(slug) {
   return slug
     .replace(/-/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 export default function RestaurantPage() {
-  const { restaurantName, locationName } = useParams();
-  const [categoriesData, setCategoriesData] = useState({});
-  const [expandedCategories, setExpandedCategories] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
-  const { cartCount } = useCart();
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  const { restaurantName, locationName } = useParams()
+  const [categoriesData, setCategoriesData] = useState({})
+  const [expandedCategories, setExpandedCategories] = useState({})
+  const [searchQuery, setSearchQuery] = useState("")
+  const { cartCount } = useCart()
+  const { initiateChat } = useChat()
+  const [storeId, setStoreId] = useState(null)
+  const [showChat, setShowChat] = useState(false)
+  const [chatId, setChatId] = useState(null)
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const lang = localStorage.getItem("selectedLanguage");
+    const token = localStorage.getItem("token")
+    const lang = localStorage.getItem("selectedLanguage")
 
     async function fetchMenu() {
       try {
@@ -60,14 +67,14 @@ export default function RestaurantPage() {
               Authorization: `Bearer ${token}`,
             },
           }
-        );
+        )
 
-        const stores = storeRes.data.data.rows;
+        const stores = storeRes.data.data.rows
 
         const matchedStore = stores.find((store) => {
-          const slugName = store.name.toLowerCase().replace(/\s+/g, "-");
-          const slugLocationName = store.location?.name?.toLowerCase().replace(/\s+/g, "-");
-          const slugLocationAddress = store.location?.address?.toLowerCase().replace(/,/g, "").replace(/\s+/g, "-");
+          const slugName = store.name.toLowerCase().replace(/\s+/g, "-")
+          const slugLocationName = store.location?.name?.toLowerCase().replace(/\s+/g, "-")
+          const slugLocationAddress = store.location?.address?.toLowerCase().replace(/,/g, "").replace(/\s+/g, "-")
 
           return (
             slugName === restaurantName.toLowerCase() &&
@@ -75,26 +82,26 @@ export default function RestaurantPage() {
               locationName.toLowerCase().includes(slugLocationName) ||
               locationName.toLowerCase().includes(slugLocationAddress)
             )
-          );
-        });
+          )
+        })
 
         if (!matchedStore) {
-          alert("No matching store found!");
-          console.warn("Store not matched for:", restaurantName, locationName);
-          return;
+          alert("No matching store found!")
+          console.warn("Store not matched for:", restaurantName, locationName)
+          return
         }
 
-        const storeId = matchedStore.id;
+        setStoreId(matchedStore.id)
 
         const payload = {
           limit: 4000,
           offset: 0,
-          storeId,
+          storeId: matchedStore.id,
           languageId: lang || "2bfa9d89-61c4-401e-aae3-346627460558",
-        };
+        }
 
         if (searchQuery.trim() !== "") {
-          payload.searchKey = searchQuery;
+          payload.searchKey = searchQuery
         }
 
         const res = await axios.post(
@@ -105,32 +112,55 @@ export default function RestaurantPage() {
               Authorization: `Bearer ${token}`,
             },
           }
-        );
+        )
 
         if (res.data.success) {
-          const structured = formatCategories(res.data.data.rows);
-          setCategoriesData(structured);
+          const structured = formatCategories(res.data.data.rows)
+          setCategoriesData(structured)
           const initialExpanded = Object.keys(structured).reduce((acc, cat) => {
-            acc[cat] = true;
-            return acc;
-          }, {});
-          setExpandedCategories(initialExpanded);
+            acc[cat] = true
+            return acc
+          }, {})
+          setExpandedCategories(initialExpanded)
         } else {
-          console.warn("Failed to fetch products");
+          console.warn("Failed to fetch products")
         }
       } catch (error) {
-        console.error("Error loading menu:", error);
+        console.error("Error loading menu:", error)
       }
     }
 
-    if (restaurantName && locationName) fetchMenu();
-  }, [restaurantName, locationName, searchQuery]);
+    if (restaurantName && locationName) fetchMenu()
+  }, [restaurantName, locationName, searchQuery])
 
   function toggleCategory(cat) {
     setExpandedCategories((prev) => ({
       ...prev,
       [cat]: !prev[cat],
-    }));
+    }))
+  }
+
+  const handleChatClick = async () => {
+    if (!storeId) {
+      alert("Store not found. Please try again.")
+      return
+    }
+
+    const products = Object.values(categoriesData).flat()
+    const productId = products.length > 0 ? products[0].id : null
+
+    try {
+      const newChatId = await initiateChat(storeId, productId, null, null)
+      if (newChatId) {
+        setChatId(newChatId)
+        setShowChat(true)
+      } else {
+        alert("Failed to initiate chat. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error initiating chat:", error)
+      alert("Failed to initiate chat. Please try again.")
+    }
   }
 
   return (
@@ -140,13 +170,13 @@ export default function RestaurantPage() {
           {/* Header */}
           <div className="fixed w-full max-w-md px-4 flex gap-4 py-3 bg-lightpink items-center justify-between z-30">
             <div className="flex items-center gap-4">
-              <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.push("/foodmarketplace")} />
+              <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => window.history.back()} />
               <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
                 {unslugify(restaurantName)}
               </span>
             </div>
             <button
-              onClick={() => router.push("/foodmarketplace/cart")}
+              onClick={() => window.location.href = "/foodmarketplace/cart"}
               className="relative flex items-center"
             >
               <ShoppingCart size={20} strokeWidth={2} className="text-white" />
@@ -157,7 +187,6 @@ export default function RestaurantPage() {
               )}
             </button>
           </div>
-
           {/* Info */}
           <div className="w-full max-w-md bg-lightpink px-2 flex justify-between pt-16">
             <div className="flex flex-col gap-1 mb-2">
@@ -214,6 +243,8 @@ export default function RestaurantPage() {
               </div>
             ))}
           </div>
+
+          {/* Search Bar */}
           <div className="fixed bottom-0 w-full max-w-md flex gap-2 bg-white p-2 items-center shadow-[0_-4px_8px_-4px_rgba(0,0,0,0.2)]">
             <input
               type="text"
@@ -224,8 +255,33 @@ export default function RestaurantPage() {
             />
             <Search className="text-lightpink absolute ml-2" size={20} />
           </div>
+
+          {/* Chat Button */}
+          <button
+            onClick={handleChatClick}
+            className="fixed bottom-16 bg-lightpink text-white rounded-full p-3 shadow-lg hover:bg-[#E72068] transition-colors duration-200 z-40"
+            style={{ right: 'calc((100% - 28rem) / 2 + 1rem)' }}
+            title="Chat with restaurant"
+          >
+            <MessageCircle size={24} />
+          </button>
+
+          {/* Chat Modal */}
+          {showChat && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+              <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-scaleIn">
+                <button
+                  onClick={() => setShowChat(false)}
+                  className="absolute top-4 right-4 text-slate-600 hover:text-slate-900 z-50"
+                >
+                  <X size={24} />
+                </button>
+                <MobileChatUI chatId={chatId} participantId={storeId} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </MenuContext.Provider>
-  );
+  )
 }
