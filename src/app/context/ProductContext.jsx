@@ -47,7 +47,7 @@ export const ProductProvider = ({ children, marketplace = "electronicsmarketplac
         setError(`Failed to fetch categories for ${marketplace} marketplace`);
       }
     } catch (err) {
-      setError(`Error fetching categories for ${marketplace} marketplace: ${err.message}`);
+       //setError(`Error fetching categories for ${marketplace} marketplace: ${err.message}`);
     }
   };
 
