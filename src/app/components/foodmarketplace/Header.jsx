@@ -28,6 +28,9 @@ export default function FoodHeader() {
 
   return (
     <div className="w-full relative min-h-[450px]">
+      {/* Breadcrumb Section */}
+      {/* <Breadcrumbs /> */}
+
       {/* Background Image */}
       <div className="z-10 absolute inset-0 h-[450px]">
         <Image
@@ -42,7 +45,6 @@ export default function FoodHeader() {
       <div className="relative z-30 p-2 flex w-full max-w-md justify-between items-start">
         <div className="flex flex-col w-full justify-between">
           <div className="w-[60%] flex flex-col gap-1 justify-center relative">
-            {/* Address Button */}
             <div
               className="flex gap-2 items-center w-full cursor-pointer"
               onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -53,13 +55,9 @@ export default function FoodHeader() {
               </span>
               <ChevronDown color="white" />
             </div>
-
-            {/* Full address */}
             <span className="text-white font-semibold ml-1 line-clamp-1">
               {selectedLocation?.address || "Full Address Here..."}
             </span>
-
-            {/* Location Dropdown */}
             {dropdownOpen && (
               <div className="z-[80] absolute top-full mt-1 left-0 bg-white rounded shadow w-64 max-h-60 overflow-auto">
                 {locations.map((loc) => (
@@ -79,10 +77,7 @@ export default function FoodHeader() {
             )}
           </div>
         </div>
-
-        {/* Icons Section */}
         <div className="flex items-center space-x-2">
-          {/* Language Dropdown */}
           <div className="relative">
             <div
               className="p-2 bg-lightpink rounded-full w-fit h-fit cursor-pointer"
@@ -114,8 +109,6 @@ export default function FoodHeader() {
               </div>
             )}
           </div>
-
-          {/* Profile Icon */}
           <div
             className="p-2 bg-lightpink rounded-full w-fit h-fit cursor-pointer"
             onClick={() => router.push("/foodmarketplace/profile")}

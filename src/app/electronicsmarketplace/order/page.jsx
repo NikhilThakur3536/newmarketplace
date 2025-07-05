@@ -1,5 +1,6 @@
 "use client";
 
+import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs";
 import { useOrder } from "@/app/context/OrderContext";
 import { RefreshCw, ShoppingBag, AlertCircle, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,8 @@ export default function Order({ marketplace }) {
 
   return (
     <div className="container mx-auto px-4 min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+              <Breadcrumbs/>
+
       <div className="flex justify-between items-center mb-8">
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-white shadow-sm sticky top-0 z-50">
           <ChevronLeft

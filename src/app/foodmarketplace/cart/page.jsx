@@ -7,9 +7,12 @@ import { useOrder } from "@/app/context/OrderContext";
 import { useCustomerAddresses } from "@/app/context/CustomerAddressContext";
 import { useCoupons } from "@/app/context/CouponContext";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useContext } from "react";
 import { debounce } from "lodash";
 import { motion, AnimatePresence } from "framer-motion";
+import BreadcrumbContext from "@/app/context/BreadCrumbContext"; // Import BreadcrumbContext
+import Link from "next/link"; // Import Link for navigation
+import Breadcrumbs from "@/app/components/foodmarketplace/BreadCrumbs";
 
 export default function Cart() {
   const { cartItems, removeFromCart, updateCartQuantity, fetchCartItems, isLoading: cartLoading } = useCart();
@@ -17,6 +20,7 @@ export default function Cart() {
   const { addresses, loading: addressesLoading } = useCustomerAddresses();
   const { coupons, loading: couponsLoading, error: couponError, fetchCoupons } = useCoupons();
   const router = useRouter();
+  const { breadcrumbs } = useContext(BreadcrumbContext); // Access breadcrumbs from context
   const [localCartItems, setLocalCartItems] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +29,9 @@ export default function Cart() {
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [lastRestaurantUrl, setLastRestaurantUrl] = useState("");
   const [lastFetchedSubTotal, setLastFetchedSubTotal] = useState(null);
+
+
+  console.log("bread",breadcrumbs)
 
   // Debounced fetchCoupons
   const debouncedFetchCoupons = useCallback(
@@ -162,10 +169,9 @@ export default function Cart() {
         selectedCoupon?.code || "",
         Number.isFinite(Number(selectedCoupon?.discountAmount)) ? Number(selectedCoupon.discountAmount) : 0,
         Number(totalAmount),
-        orderType // Pass orderType to placeOrder
+        orderType
       );
       if (success) {
-        // await Promise.all(localCartItems.map((item) => removeFromCart(item.id)));
         await fetchCartItems();
         setLocalCartItems([]);
         setIsModalOpen(false);
@@ -184,12 +190,17 @@ export default function Cart() {
   return (
     <div className="min-h-screen flex justify-center bg-white">
       <div className="max-w-md w-full">
+        {/* Breadcrumb Section */}
+        <Breadcrumbs/>
+
+        {/* Existing Header */}
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-lightpink">
           <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={() => router.back()} />
           <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
             Cart
           </span>
         </div>
+
         <div className="w-full px-4 py-4">
           {cartLoading ? (
             <p className="text-gray-600 text-center">Loading cart...</p>
@@ -272,166 +283,167 @@ export default function Cart() {
             </div>
           )}
         </div>
-      </div>
-      <AnimatePresence>
-        {isModalOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-[68] bg-black/40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleCloseModal}
-            />
-            <motion.div
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[70] w-full max-w-md bg-white rounded-t-3xl p-4 shadow-xl"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-              <div className="flex justify-between items-center border-b pb-2">
-                <h2 className="text-xl font-bold text-gray-800">Checkout</h2>
-                <button onClick={handleCloseModal} className="text-gray-500 text-lg">
-                  ✕
-                </button>
-              </div>
-              <div className="mt-4 max-h-[50vh] overflow-y-auto">
-                <div className="mb-4">
-                  <h3 className="font-semibold text-gray-800 mb-2">Order Type</h3>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="orderType"
-                        value="DELIVERY"
-                        checked={orderType === "DELIVERY"}
-                        onChange={() => setOrderType("DELIVERY")}
-                        className="text-lightpink focus:ring-lightpink"
-                      />
-                      <span className="text-gray-700">Delivery</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="orderType"
-                        value="PICKUP"
-                        checked={orderType === "PICKUP"}
-                        onChange={() => setOrderType("PICKUP")}
-                        className="text-lightpink focus:ring-lightpink"
-                      />
-                      <span className="text-gray-700">Pickup</span>
-                    </label>
-                  </div>
+
+        <AnimatePresence>
+          {isModalOpen && (
+            <>
+              <motion.div
+                className="fixed inset-0 z-[68] bg-black/40"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={handleCloseModal}
+              />
+              <motion.div
+                className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[70] w-full max-w-md bg-white rounded-t-3xl p-4 shadow-xl"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
+                <div className="flex justify-between items-center border-b pb-2">
+                  <h2 className="text-xl font-bold text-gray-800">Checkout</h2>
+                  <button onClick={handleCloseModal} className="text-gray-500 text-lg">
+                    ✕
+                  </button>
                 </div>
-                {orderType === "DELIVERY" && (
+                <div className="mt-4 max-h-[50vh] overflow-y-auto">
                   <div className="mb-4">
-                    <h3 className="font-semibold text-gray-800 mb-2">Select Delivery Address</h3>
-                    {addressesLoading ? (
-                      <p className="text-gray-600 text-center">Loading addresses...</p>
-                    ) : addresses.length === 0 ? (
-                      <p className="text-gray-600 text-center">No addresses available</p>
-                    ) : (
-                      addresses.map((address, index) => (
-                        <label
-                          key={address.id || `address-${index}`} // Fallback key
-                          className="flex items-start gap-3 p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50"
-                        >
-                          <input
-                            type="radio"
-                            name="address"
-                            value={address.id}
-                            checked={selectedAddressId === address.id}
-                            onChange={() => setSelectedAddressId(address.id)}
-                            className="mt-1 text-lightpink focus:ring-lightpink"
-                          />
-                          <div>
-                            <h3 className="font-semibold text-gray-800">{address.name}</h3>
-                            <p className="text-gray-600 text-sm">
-                              {address.addressLine1}
-                              {address.landmark && `, ${address.landmark}`}
-                            </p>
-                          </div>
-                        </label>
-                      ))
-                    )}
+                    <h3 className="font-semibold text-gray-800 mb-2">Order Type</h3>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="orderType"
+                          value="DELIVERY"
+                          checked={orderType === "DELIVERY"}
+                          onChange={() => setOrderType("DELIVERY")}
+                          className="text-lightpink focus:ring-lightpink"
+                        />
+                        <span className="text-gray-700">Delivery</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="orderType"
+                          value="PICKUP"
+                          checked={orderType === "PICKUP"}
+                          onChange={() => setOrderType("PICKUP")}
+                          className="text-lightpink focus:ring-lightpink"
+                        />
+                        <span className="text-gray-700">Pickup</span>
+                      </label>
+                    </div>
                   </div>
-                )}
-                <div className="mb-4">
-                  <h3 className="font-semibold text-gray-800 mb-2">Apply Coupon</h3>
-                  {couponsLoading ? (
-                    <p className="text-gray-600 text-center">Loading coupons...</p>
-                  ) : couponError ? (
-                    <p className="text-red-600 text-center">{couponError}</p>
-                  ) : coupons.length === 0 ? (
-                    <p className="text-gray-600 text-center">No coupons available</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {coupons.map((coupon, index) => (
-                        <label
-                          key={coupon.code || `coupon-${index}`} // Fallback key
-                          className="flex items-center justify-between p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
-                        >
-                          <div className="flex items-center gap-2">
+                  {orderType === "DELIVERY" && (
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-gray-800 mb-2">Select Delivery Address</h3>
+                      {addressesLoading ? (
+                        <p className="text-gray-600 text-center">Loading addresses...</p>
+                      ) : addresses.length === 0 ? (
+                        <p className="text-gray-600 text-center">No addresses available</p>
+                      ) : (
+                        addresses.map((address, index) => (
+                          <label
+                            key={address.id || `address-${index}`}
+                            className="flex items-start gap-3 p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50"
+                          >
                             <input
                               type="radio"
-                              name="coupon"
-                              value={coupon.code}
-                              checked={selectedCoupon?.code === coupon.code}
-                              onChange={() =>
-                                setSelectedCoupon({
-                                  code: coupon.code,
-                                  discountAmount: Number.isFinite(Number(coupon.discountAmount))
-                                    ? Number(coupon.discountAmount)
-                                    : 0,
-                                })
-                              }
-                              className="text-lightpink focus:ring-lightpink"
+                              name="address"
+                              value={address.id}
+                              checked={selectedAddressId === address.id}
+                              onChange={() => setSelectedAddressId(address.id)}
+                              className="mt-1 text-lightpink focus:ring-lightpink"
                             />
-                            <span className="text-gray-700">{coupon.code}</span>
-                          </div>
-                          <span className="text-sm text-green-700">
-                            Save ₹
-                            {(Number.isFinite(Number(coupon.discountAmount))
-                              ? Number(coupon.discountAmount)
-                              : 0
-                            ).toFixed(2)}
-                          </span>
-                        </label>
-                      ))}
+                            <div>
+                              <h3 className="font-semibold text-gray-800">{address.name}</h3>
+                              <p className="text-gray-600 text-sm">
+                                {address.addressLine1}
+                                {address.landmark && `, ${address.landmark}`}
+                              </p>
+                            </div>
+                          </label>
+                        ))
+                      )}
                     </div>
                   )}
-                </div>
-                <div className="border-t pt-3">
-                  <div className="flex justify-between text-gray-700">
-                    <span>Subtotal</span>
-                    <span>₹{Number.isFinite(subTotal) ? subTotal.toFixed(2) : "0.00"}</span>
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-800 mb-2">Apply Coupon</h3>
+                    {couponsLoading ? (
+                      <p className="text-gray-600 text-center">Loading coupons...</p>
+                    ) : couponError ? (
+                      <p className="text-red-600 text-center">{couponError}</p>
+                    ) : coupons.length === 0 ? (
+                      <p className="text-gray-600 text-center">No coupons available</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {coupons.map((coupon, index) => (
+                          <label
+                            key={coupon.code || `coupon-${index}`}
+                            className="flex items-center justify-between p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
+                          >
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="coupon"
+                                value={coupon.code}
+                                checked={selectedCoupon?.code === coupon.code}
+                                onChange={() =>
+                                  setSelectedCoupon({
+                                    code: coupon.code,
+                                    discountAmount: Number.isFinite(Number(coupon.discountAmount))
+                                      ? Number(coupon.discountAmount)
+                                      : 0,
+                                  })
+                                }
+                                className="text-lightpink focus:ring-lightpink"
+                              />
+                              <span className="text-gray-700">{coupon.code}</span>
+                            </div>
+                            <span className="text-sm text-green-700">
+                              Save ₹
+                              {(Number.isFinite(Number(coupon.discountAmount))
+                                ? Number(coupon.discountAmount)
+                                : 0
+                              ).toFixed(2)}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {selectedCoupon && Number.isFinite(Number(selectedCoupon.discountAmount)) && (
-                    <div className="flex justify-between text-green-700">
-                      <span>Coupon ({selectedCoupon.code})</span>
-                      <span>-₹{(Number(selectedCoupon.discountAmount) || 0).toFixed(2)}</span>
+                  <div className="border-t pt-3">
+                    <div className="flex justify-between text-gray-700">
+                      <span>Subtotal</span>
+                      <span>₹{Number.isFinite(subTotal) ? subTotal.toFixed(2) : "0.00"}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between font-semibold text-gray-800 mt-2">
-                    <span>Total</span>
-                    <span>₹{Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : "0.00"}</span>
+                    {selectedCoupon && Number.isFinite(Number(selectedCoupon.discountAmount)) && (
+                      <div className="flex justify-between text-green-700">
+                        <span>Coupon ({selectedCoupon.code})</span>
+                        <span>-₹{(Number(selectedCoupon.discountAmount) || 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-semibold text-gray-800 mt-2">
+                      <span>Total</span>
+                      <span>₹{Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : "0.00"}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="mt-6">
-                <button
-                  onClick={handlePlaceOrder}
-                  className="w-full py-2 bg-lightpink text-white font-bold rounded-xl hover:bg-pink-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  disabled={addressesLoading || (orderType === "DELIVERY" && addresses.length === 0) || subTotal <= 0 || !Number.isFinite(totalAmount) || cartLoading || isUpdating}
-                >
-                  Place Order ₹{Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : "0.00"}
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                <div className="mt-6">
+                  <button
+                    onClick={handlePlaceOrder}
+                    className="w-full py-2 bg-lightpink text-white font-bold rounded-xl hover:bg-pink-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    disabled={addressesLoading || (orderType === "DELIVERY" && addresses.length === 0) || subTotal <= 0 || !Number.isFinite(totalAmount) || cartLoading || isUpdating}
+                  >
+                    Place Order ₹{Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : "0.00"}
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

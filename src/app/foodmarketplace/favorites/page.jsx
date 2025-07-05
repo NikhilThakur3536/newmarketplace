@@ -6,6 +6,7 @@ import { useFavorite } from "@/app/context/FavouriteContext";
 import { useEffect } from "react";
 import FavItemCard from "@/app/components/foodmarketplace/FavItemCards";
 import dynamic from "next/dynamic";
+import Breadcrumbs from "@/app/components/foodmarketplace/BreadCrumbs";
 
 const FoodNavBar = dynamic(() => import("@/app/components/foodmarketplace/NavBar"), {
   ssr: false,
@@ -37,6 +38,7 @@ export default function Favorite() {
   return (
     <div className="flex justify-center min-h-screen">
       <div className="max-w-md w-full">
+        <Breadcrumbs/>
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-lightpink">
           <ChevronLeft
             size={20}

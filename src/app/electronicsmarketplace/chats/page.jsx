@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useChat } from "@/app/context/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs";
 
 export default function Chats() {
   const router = useRouter();
@@ -181,6 +182,7 @@ export default function Chats() {
   return (
     <div className="min-h-screen flex justify-center bg-gray-50">
       <div className="flex flex-col gap-4 max-w-md w-full">
+        <Breadcrumbs/>
         {/* Header */}
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-white shadow-md sticky top-0 z-50">
           <ChevronLeft

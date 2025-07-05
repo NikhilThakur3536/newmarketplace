@@ -10,6 +10,7 @@ import { useChat } from "@/app/context/ChatContext";
 import { useCart } from "@/app/context/CartContext";
 import { useFavorite } from "@/app/context/FavouriteContext";
 import toast from "react-hot-toast";
+import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -560,6 +561,7 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between relative">
+        <Breadcrumbs/>
         <button onClick={() => router.push("/electronicsmarketplace")}>
           <ChevronLeft className="w-6 h-6 text-gray-700" />
         </button>

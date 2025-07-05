@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useCustomerAddresses } from "@/app/context/CustomerAddressContext";
 import { useCart } from "@/app/context/CartContext";
 import { useRouter } from "next/navigation";
+import Breadcrumbs from "@/app/components/foodmarketplace/BreadCrumbs";
 
 export default function Address() {
   const router = useRouter()
@@ -33,13 +34,16 @@ export default function Address() {
   return (
     <div className="w-screen min-h-screen flex justify-center overflow-y-auto">
       <div className="max-w-md w-full flex flex-col gap-4 relative bg-white ">
-        {/* Header */}
-        <div className="w-full px-4 flex gap-4 py-3 bg-lightpink items-center">
-          <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={()=>router.back()}/>
-          <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
-            Choose Delivery Address
-          </span>
-        </div>
+        <div className="flex flex-col">  
+          <Breadcrumbs/>
+          {/* Header */}
+          <div className="w-full px-4 flex gap-4 py-3 bg-lightpink items-center">
+            <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={()=>router.back()}/>
+            <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">
+              Choose Delivery Address
+            </span>
+          </div>
+          </div>
 
         {/* Add New Button + Form */}
         <div className="w-full max-w-md px-4 flex flex-col gap-2">

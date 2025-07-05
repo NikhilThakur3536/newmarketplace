@@ -6,11 +6,13 @@ import { CouponProvider } from "../context/CouponContext"
 import { OrderProvider } from "../context/OrderContext"
 import { CustomerAddressProvider } from "../context/CustomerAddressContext"
 import { AuthProvider } from "../context/AuthContext"
+import { BreadcrumbProvider } from "../context/BreadCrumbContext"
 export default function RootLayout({ children }) {
   return (
    <>
           <div className="max-w-md mx-auto bg-white min-h-screen relative overflow-hidden">
             <AuthProvider marketplace={"electronicsmarketplace"}>
+              <BreadcrumbProvider marketplace={"electronicsmarketplace"}>
             <ProductProvider marketplace="electronicsmarketplace">
               <OrderProvider marketplace={"electronics"}>
               <ChatProvider>
@@ -26,6 +28,7 @@ export default function RootLayout({ children }) {
                 </ChatProvider>
                 </OrderProvider>
             </ProductProvider>    
+            </BreadcrumbProvider>
             </AuthProvider>
           </div>
     </>  

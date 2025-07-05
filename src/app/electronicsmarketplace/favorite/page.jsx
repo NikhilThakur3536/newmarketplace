@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Heart, Trash2 } from "lucide-react";
 import { useFavorite } from "@/app/context/FavouriteContext";
 import BottomNavigation from "@/app/components/electronicsmarketplcae/BottomNavigation";
+import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs";
 
 export default function FavoritesPage() {
   const { favoriteItems, loading, showPopup, toggleFavorite } = useFavorite();
@@ -22,6 +23,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-20 pb-28 px-4 max-w-md mx-auto">
+      <Breadcrumbs/>
       {/* Header */}
       <div className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white px-4 py-4 shadow-md z-40 flex gap-2 items-center">
         <ChevronLeft

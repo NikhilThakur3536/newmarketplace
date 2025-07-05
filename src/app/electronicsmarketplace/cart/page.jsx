@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs";
+
 
 export default function Cart({ marketplace = "electronics" }) {
   const router = useRouter();
@@ -20,7 +22,6 @@ export default function Cart({ marketplace = "electronics" }) {
   const [showCheckoutPopup, setShowCheckoutPopup] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddAddressForm, setShowAddAddressForm] = useState(false);
-
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   // Calculate total price
@@ -114,6 +115,7 @@ export default function Cart({ marketplace = "electronics" }) {
   return (
     <div className="min-h-screen flex justify-center bg-gray-50">
       <div className="max-w-md w-full flex flex-col">
+        <Breadcrumbs/>
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-white shadow-sm sticky top-0 z-50">
           <ChevronLeft
             size={20}

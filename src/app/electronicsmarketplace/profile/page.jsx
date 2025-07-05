@@ -1,12 +1,14 @@
 "use client"
 
 import BottomNavigation from "@/app/components/electronicsmarketplcae/BottomNavigation"
+import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs"
 import ProfileTabs from "@/app/components/electronicsmarketplcae/ProfileTabs"
 
 export default function Profile () {
     return(
         <div className=" flex justify-center h-screen">
             <div className="w-full max-w-md bg-darkgreen flex flex-col relative">
+                <Breadcrumbs/>
                 <div className="w-full h-full realtive">
                     {/* <Image src={"/Profilebg.png"} fill className="object-center" alt="background"/> */}
                 </div>

@@ -1,10 +1,12 @@
 "use client"
 
+import Breadcrumbs from "@/app/components/foodmarketplace/BreadCrumbs"
 import FoodNavBar from "@/app/components/foodmarketplace/NavBar"
 import OrderCard from "@/app/components/foodmarketplace/OrderCard"
 import { ChevronLeft, Search } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+
 
 export default function Orders(){
     const router = useRouter()
@@ -12,6 +14,7 @@ export default function Orders(){
     return(
         <div className=" flex justify-center min-h-screen">
             <div className="max-w-md w-full relative flex flex-col bg-white ">
+                <Breadcrumbs/>
                 <div className="w-full px-4 flex gap-4 py-3 items-center bg-lightpink">
                     <ChevronLeft size={20} strokeWidth={3} className="text-white" onClick={()=>router.back()}/>
                     <span className="text-white font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis">

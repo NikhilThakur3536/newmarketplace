@@ -10,10 +10,12 @@ import { CategoryProvider } from "../context/CategoryContext";
 import { ProductProvider } from "../context/ProductContext";
 import { ChatProvider } from "../context/ChatContext";
 import { AuthProvider } from "../context/AuthContext";
+import { BreadcrumbProvider } from "../context/BreadCrumbContext";
 
 export default function RootLayout({ children }) {
   return (
     <AuthProvider marketplace={"foodmarketplace"}>
+      <BreadcrumbProvider marketplace={"foodmarketplace"}>
     <CustomerAddressProvider>
       <LocationProvider>
         <CouponProvider>
@@ -33,6 +35,7 @@ export default function RootLayout({ children }) {
         </CouponProvider>
       </LocationProvider>
     </CustomerAddressProvider>
+    </BreadcrumbProvider>
     </AuthProvider>
   );
 }
