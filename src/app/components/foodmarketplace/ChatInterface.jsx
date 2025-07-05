@@ -66,27 +66,27 @@ export default function MobileChatUI({ participantId, chatId }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <>
+      <div className="w-full max-w-md h-[80vh] bg-transparent rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#E72068] to-[#FF6B9D] p-4 flex items-center justify-between text-white">
+        <div className="bg-gradient-to-r from-[#E72068] to-[#FF6B9D] py-4 pl-4 pr-12 flex items-center justify-between text-white">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-semibold">JD</div>
             <div>
-              <h3 className="font-semibold">John Designer</h3>
-              <p className="text-sm opacity-90">{productName || "Chat"}</p>
+              <h3 className="font-semibold">Seller</h3>
+              <p className="text-sm opacity-90">{productName || "Online"}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 ">
             <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <Phone className="h-4 w-4" />
             </button>
             <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <Video className="h-4 w-4" />
             </button>
-            <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+            {/* <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <MoreVertical className="h-4 w-4" />
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -283,6 +283,6 @@ export default function MobileChatUI({ participantId, chatId }) {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

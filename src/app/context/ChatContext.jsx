@@ -22,13 +22,8 @@ export function ChatProvider({ children }) {
 
   const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
 
-  const checkExistingChat = useCallback(async (participantId, productId) => {
+  const checkExistingChat = useCallback(async (participantId, productId = null) => {
     console.log("Checking existing chat for participantId:", participantId, "productId:", productId, "at:", new Date().toISOString());
-    if (!productId) {
-      console.warn("Missing productId:", { productId });
-      setChatError("Missing product ID");
-      return { chatId: null, chatProductId: null };
-    }
 
     try {
       const token = getToken();
@@ -61,16 +56,15 @@ export function ChatProvider({ children }) {
         (chat) =>
           chat.participantType === "seller" &&
           chat.chatType === "direct" &&
-          chat.productId === productId &&
-          chat.participantId === participantId
+          chat.participantId === participantId &&
+          (!productId || chat.productId === productId) // Match productId only if provided
       );
 
       if (existingChat) {
         const chatProductId = existingChat.chatProducts?.[0]?.id || null;
         return { chatId: existingChat.id, chatProductId };
-      } else {
-        return { chatId: null, chatProductId: null };
       }
+      return { chatId: null, chatProductId: null };
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message;
       console.error("Check Existing Chat Error:", errorMessage, err.response?.data);
@@ -159,10 +153,10 @@ export function ChatProvider({ children }) {
   );
 
   const initiateChat = useCallback(
-    async (participantId, productId, varientId, inventoryId) => {
-      if (!participantId || !productId) {
-        setChatError("No participant ID or product ID provided");
-        console.warn("Missing participantId or productId:", { participantId, productId });
+    async (participantId, productId = null, varientId = null, inventoryId = null) => {
+      if (!participantId) {
+        setChatError("No participant ID provided");
+        console.warn("Missing participantId:", { participantId });
         return false;
       }
 
@@ -176,11 +170,15 @@ export function ChatProvider({ children }) {
       setMessages([]);
 
       try {
+        // Check for existing chat
         const { chatId: existingChatId, chatProductId: existingChatProductId } = await checkExistingChat(
           participantId,
           productId
         );
+
+        // If an existing chat is found, open it
         if (existingChatId) {
+          console.log("Opening existing chat with ID:", existingChatId);
           setChatId(existingChatId);
           setParticipantId(participantId);
           setChatProductId(existingChatProductId);
@@ -193,16 +191,21 @@ export function ChatProvider({ children }) {
           throw new Error("Authentication token missing");
         }
 
+        // Construct payload dynamically, only include fields if explicitly provided and not null
+        const payload = {
+          participantId,
+          participantType: "seller",
+          chatType: "direct",
+        };
+        if (productId) payload.productId = productId;
+        if (varientId) payload.varientId = varientId;
+        if (inventoryId) payload.inventoryId = inventoryId;
+
+        console.log("Initiated chat payload:", payload);
+
         const response = await axios.post(
           `${BASE_URL}/user/chat/create`,
-          {
-            participantId,
-            participantType: "seller",
-            chatType: "direct",
-            productId,
-            varientId,
-            inventoryId,
-          },
+          payload,
           {
             headers: {
               "Content-Type": "application/json",
@@ -224,8 +227,9 @@ export function ChatProvider({ children }) {
           throw new Error("Failed to create chat session");
         }
       } catch (err) {
-        if (err.response?.data?.error === "Chat already exists" && err.response?.data?.existingChatId) {
+        if (err.response?.data?.error === "Chat already exists") {
           const existingChatId = err.response.data.existingChatId;
+          console.log("Chat already exists, opening chat with ID:", existingChatId);
           setChatId(existingChatId);
           setParticipantId(participantId);
           const token = getToken();
@@ -366,13 +370,12 @@ export function ChatProvider({ children }) {
           participantId: chat.participantId,
           participantType: chat.participantType,
           chatType: chat.chatType,
-          productId: chat.chatProducts?.[0]?.product?.id,
+          productId: chat.chatProducts?.[0]?.product?.id || null,
           chatProductId: chat.chatProducts?.[0]?.id || null,
-          varientId: chat.chatProducts?.[0]?.varientId,
-          inventoryId: chat.chatProducts?.[0]?.inventoryId,
+          varientId: chat.chatProducts?.[0]?.varientId || null,
+          inventoryId: chat.chatProducts?.[0]?.inventoryId || null,
           productSeller: chat.store?.name,
-          productName:chat.chatProducts?.[0]?.product?.productLanguages?.[0]?.name
-
+          productName: chat.chatProducts?.[0]?.product?.productLanguages?.[0]?.name || null,
         }));
       }
 
@@ -392,12 +395,12 @@ export function ChatProvider({ children }) {
           participantId: chat.participantId,
           participantType: chat.participantType,
           chatType: chat.chatType,
-          productId: chat.chatProducts?.[0]?.product?.id,
+          productId: chat.chatProducts?.[0]?.product?.id || null,
           chatProductId: chat.chatProducts?.[0]?.id || null,
-          varientId: chat.chatProducts?.[0]?.varientId,
-          inventoryId: chat.chatProducts?.[0]?.inventoryId,
+          varientId: chat.chatProducts?.[0]?.varientId || null,
+          inventoryId: chat.chatProducts?.[0]?.inventoryId || null,
           productSeller: chat.store?.name,
-          productName:chat.chatProducts?.[0]?.product?.productLanguages?.[0]?.name
+          productName: chat.chatProducts?.[0]?.product?.productLanguages?.[0]?.name || null,
         }));
       } else {
         throw new Error("No chats found or API call unsuccessful");

@@ -150,16 +150,16 @@ export default function RestaurantPage() {
     const productId = products.length > 0 ? products[0].id : null
 
     try {
-      const newChatId = await initiateChat(storeId, productId, null, null)
+      const newChatId = await initiateChat(storeId)
       if (newChatId) {
         setChatId(newChatId)
         setShowChat(true)
       } else {
-        alert("Failed to initiate chat. Please try again.")
+        console.error("api not trigerred")
       }
     } catch (error) {
       console.error("Error initiating chat:", error)
-      alert("Failed to initiate chat. Please try again.")
+      // alert("Failed to initiate chat. Please try again.")
     }
   }
 
@@ -272,9 +272,9 @@ export default function RestaurantPage() {
               <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-scaleIn">
                 <button
                   onClick={() => setShowChat(false)}
-                  className="absolute top-4 right-4 text-slate-600 hover:text-slate-900 z-50"
+                  className="absolute top-6 bg-lightpink/30 rounded-full w-fit h-fit p-1 right-4 text-slate-600 hover:text-slate-900 z-50"
                 >
-                  <X size={24} />
+                  <X size={24} color="white"/>
                 </button>
                 <MobileChatUI chatId={chatId} participantId={storeId} />
               </div>
