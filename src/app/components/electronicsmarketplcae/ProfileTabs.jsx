@@ -30,21 +30,21 @@ const sections = [
     label: "Favorites",
     icon: <Heart size={20} className="text-red-400" />,
     background: "bg-red-100",
-    route: "/foodmarketplace/favorites",
+    route: "/electronicsmarketplace/favorites",
   },
   {
     key: "orders",
     label: "Orders",
     icon: <ShoppingBag size={20} className="text-green-500" />,
     background: "bg-green-100",
-    route: "/foodmarketplace/orders",
+    route: "/electronicsmarketplace/orders",
   },
   {
     key: "address",
     label: "Address",
     icon: <MapPin size={20} className="text-purple-500" />,
     background: "bg-purple-100",
-    route: "/foodmarketplace/address",
+    route: "/electronicsmarketplace/address",
   },
 ];
 
