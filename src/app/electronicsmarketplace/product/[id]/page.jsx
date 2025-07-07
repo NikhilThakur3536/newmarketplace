@@ -352,7 +352,7 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [quantity, setQuantity] = useState(1); // Default to 1, updated from cart
+  const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [similarProductsError, setSimilarProductsError] = useState(null);
@@ -360,8 +360,9 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showChat, setShowChat] = useState(false);
+  const [similarProductQuantities, setSimilarProductQuantities] = useState({}); // New state for similar product quantities
   const { initiateChat, clearChat } = useChat();
-  const { addToCart, cartCount, cartItems, updateCartQuantity } = useCart(); 
+  const { addToCart, cartCount, cartItems, updateCartQuantity } = useCart();
   const { favoriteItems, toggleFavorite } = useFavorite();
 
   const isInCart = cartItems.some(
@@ -418,7 +419,7 @@ export default function ProductDetailPage() {
             const cartItem = cartItems.find(
               (item) => item.productId === productData.id && item.varientId === productData.varientId
             );
-            setQuantity(cartItem ? parseInt(cartItem.quantity, 10) : 1); // Use cart quantity or 1
+            setQuantity(cartItem ? parseInt(cartItem.quantity, 10) : 1);
           } else {
             setError("Product not found in response");
           }
@@ -433,7 +434,7 @@ export default function ProductDetailPage() {
     };
 
     fetchProductById();
-  }, [id, cartItems]); 
+  }, [id, cartItems]);
 
   useEffect(() => {
     if (!product?.categoryId) return;
@@ -470,6 +471,16 @@ export default function ProductDetailPage() {
             }))
             .filter((p) => p.id);
           setSimilarProducts(products);
+
+          // Initialize quantities for similar products based on cart
+          const initialQuantities = {};
+          products.forEach((p) => {
+            const cartItem = cartItems.find(
+              (item) => item.productId === p.id && item.varientId === p.varientId
+            );
+            initialQuantities[p.id] = cartItem ? parseInt(cartItem.quantity, 10) : 1;
+          });
+          setSimilarProductQuantities(initialQuantities);
         } else {
           setSimilarProducts([]);
           setSimilarProductsError("No similar products found.");
@@ -482,7 +493,7 @@ export default function ProductDetailPage() {
     };
 
     fetchSimilarProducts();
-  }, [product?.categoryId, id]);
+  }, [product?.categoryId, id, cartItems]);
 
   const handleOpenChat = async () => {
     if (!product?.storeId) {
@@ -529,10 +540,10 @@ export default function ProductDetailPage() {
         varientId: varientId,
       };
       await addToCart(payload);
-      toast.success(`${product.name} quantity updated to ${qty} in cart`);
+      toast.success(`${product.name} added to cart with quantity ${qty}`);
     } catch (err) {
-      console.error("Error updating cart:", err);
-      toast.error("Failed to update cart");
+      console.error("Error adding to cart:", err);
+      toast.error("Failed to add to cart");
     }
   };
 
@@ -541,15 +552,37 @@ export default function ProductDetailPage() {
       (item) => item.productId === product.id && item.varientId === product.varientId
     );
     if (cartItem) {
-      // Update quantity using the edit API
       await updateCartQuantity({
         cartId: cartItem.id,
         productId: product.id,
         quantity: newQuantity,
       });
-      setQuantity(newQuantity); 
+      setQuantity(newQuantity);
     } else {
       setQuantity(newQuantity);
+    }
+  };
+
+  const handleSimilarProductQuantityChange = async (simProduct, newQuantity) => {
+    const cartItem = cartItems.find(
+      (item) => item.productId === simProduct.id && item.varientId === simProduct.varientId
+    );
+    setSimilarProductQuantities((prev) => ({
+      ...prev,
+      [simProduct.id]: newQuantity,
+    }));
+
+    if (cartItem) {
+      try {
+        await updateCartQuantity({
+          cartId: cartItem.id,
+          productId: simProduct.id,
+          quantity: newQuantity,
+        });
+      } catch (err) {
+        console.error("Error updating cart quantity:", err);
+        toast.error("Failed to update cart quantity");
+      }
     }
   };
 
@@ -560,8 +593,9 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Breadcrumbs />
+
       <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between relative">
-        <Breadcrumbs/>
         <button onClick={() => router.push("/electronicsmarketplace")}>
           <ChevronLeft className="w-6 h-6 text-gray-700" />
         </button>
@@ -644,6 +678,8 @@ export default function ProductDetailPage() {
                   const isSimProductInCart = cartItems.some(
                     (item) => item.productId === simProduct.id && item.varientId === simProduct.varientId
                   );
+                  const currentQuantity = similarProductQuantities[simProduct.id] || 1;
+
                   return (
                     <div key={simProduct.id} className="min-w-[200px] bg-white rounded-2xl p-4 shadow-sm">
                       <div className="relative mb-3">
@@ -671,9 +707,34 @@ export default function ProductDetailPage() {
                       >
                         View Details
                       </button>
-                      {!isSimProductInCart && (
+                      {isSimProductInCart ? (
+                        <div className="flex items-center gap-2 mt-3">
+                          <button
+                            onClick={() =>
+                              handleSimilarProductQuantityChange(simProduct, Math.max(1, currentQuantity - 1))
+                            }
+                            className="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center"
+                            disabled={currentQuantity <= 1}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="text-sm font-semibold min-w-[2rem] text-center">{currentQuantity}</span>
+                          <button
+                            onClick={() => handleSimilarProductQuantityChange(simProduct, currentQuantity + 1)}
+                            className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
                         <button
-                          onClick={() => addToCartHandler(simProduct, 1, simProduct.varientId)}
+                          onClick={() => {
+                            addToCartHandler(simProduct, currentQuantity, simProduct.varientId);
+                            setSimilarProductQuantities((prev) => ({
+                              ...prev,
+                              [simProduct.id]: currentQuantity,
+                            }));
+                          }}
                           className="w-full mt-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
                         >
                           <ShoppingCart className="w-5 h-5" />
@@ -695,7 +756,7 @@ export default function ProductDetailPage() {
             <button
               onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
               className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center"
-              disabled={quantity <= 1 && !isInCart} 
+              disabled={quantity <= 1 && !isInCart}
             >
               <Minus className="w-5 h-5" />
             </button>

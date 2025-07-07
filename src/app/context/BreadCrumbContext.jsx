@@ -71,6 +71,21 @@ export const BreadcrumbProvider = ({ children, marketplace }) => {
           path: `${homeConfig.path}/${restaurantSegment}/${locationSegment}`,
         },
       ];
+    } else if (pathSegments.length >= 2 && pathSegments[0] in marketplaceHomePaths) {
+      // Handle /[marketplace]/[product]/[id] to show only product label
+      const productSegment = pathSegments[1];
+      const formattedLabel = labelMap[productSegment] || 
+        productSegment
+          .split("-")
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+      newBreadcrumbs = [
+        { label: homeConfig.label, path: homeConfig.path },
+        {
+          label: formattedLabel,
+          path: `${homeConfig.path}/${productSegment}`,
+        },
+      ];
     } else {
       // Default case for other paths
       newBreadcrumbs = [
