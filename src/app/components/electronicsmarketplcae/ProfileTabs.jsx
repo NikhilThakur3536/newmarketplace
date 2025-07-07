@@ -30,22 +30,16 @@ const sections = [
     label: "Favorites",
     icon: <Heart size={20} className="text-red-400" />,
     background: "bg-red-100",
-    route: "/electronicsmarketplace/favorites",
+    route: "/electronicsmarketplace/favorite",
   },
   {
     key: "orders",
     label: "Orders",
     icon: <ShoppingBag size={20} className="text-green-500" />,
     background: "bg-green-100",
-    route: "/electronicsmarketplace/orders",
+    route: "/electronicsmarketplace/order",
   },
-  {
-    key: "address",
-    label: "Address",
-    icon: <MapPin size={20} className="text-purple-500" />,
-    background: "bg-purple-100",
-    route: "/electronicsmarketplace/address",
-  },
+
 ];
 
 export default function ProfileTabs() {
