@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Plus, Minus, Trash2, X } from "lucide-react";
+import { ChevronLeft, Plus, Minus, Trash2, X, Pencil } from "lucide-react";
 import { useCart } from "@/app/context/CartContext";
 import { useCoupons } from "@/app/context/CouponContext";
 import { useCustomerAddresses } from "@/app/context/CustomerAddressContext";
@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs";
-
 
 export default function Cart({ marketplace = "electronics" }) {
   const router = useRouter();
@@ -22,7 +21,9 @@ export default function Cart({ marketplace = "electronics" }) {
   const [showCheckoutPopup, setShowCheckoutPopup] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddAddressForm, setShowAddAddressForm] = useState(false);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const [isEditingAddress, setIsEditingAddress] = useState(false); // Track edit mode
+  const [editingAddress, setEditingAddress] = useState(null); // Store address being edited
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm();
 
   // Calculate total price
   const totalPrice = cartItems.reduce((sum, item) => 
@@ -66,20 +67,44 @@ export default function Cart({ marketplace = "electronics" }) {
     if (addresses.length === 0) {
       toast.error("Please add an address before proceeding to checkout");
       setShowAddAddressForm(true);
+      setIsEditingAddress(false);
       return;
     }
     setShowCheckoutPopup(true);
   };
 
-  const handleAddAddress = async (data) => {
-    await addOrEditAddress({
-      ...data,
-      defaultAddress: addresses.length === 0,
-      latitude: 0, // Add actual geolocation logic if needed
-      longitude: 0,
-    });
+  const handleEditAddress = (address) => {
+    setEditingAddress(address);
+    setIsEditingAddress(true);
+    setShowAddAddressForm(true);
+    // Pre-fill form with address data
+    setValue("name", address.name);
+    setValue("addressLine1", address.addressLine1);
+    setValue("addressLine2", address.addressLine2 || "");
+    setValue("road", address.road || "");
+    setValue("landmark", address.landmark || "");
+    setValue("label", address.label);
+  };
+
+  const handleAddOrEditAddress = async (data) => {
+    await addOrEditAddress(
+      {
+        id: isEditingAddress ? editingAddress.id : undefined,
+        name: data.name,
+        addressLine1: data.addressLine1,
+        addressLine2: data.addressLine2,
+        road: data.road,
+        landmark: data.landmark,
+        label: data.label,
+        defaultAddress: addresses.length === 0 || (isEditingAddress && editingAddress.defaultAddress),
+      },
+      isEditingAddress
+    );
     setShowAddAddressForm(false);
+    setIsEditingAddress(false);
+    setEditingAddress(null);
     reset();
+    toast.success(isEditingAddress ? "Address updated successfully" : "Address added successfully");
   };
 
   const handleConfirmCheckout = async () => {
@@ -94,12 +119,12 @@ export default function Cart({ marketplace = "electronics" }) {
       : totalPrice;
 
     const orderSuccess = await placeOrder(
-      Number(totalPrice), // subTotal
-      selectedAddress?.id, // customerAddressId
-      selectedCoupon?.code || "", // couponCode
-      selectedCoupon?.discountAmount || 0, // couponAmount
-      Number(finalPrice), // totalAmount
-      orderType // orderType (only included if defined)
+      Number(totalPrice),
+      selectedAddress?.id,
+      selectedCoupon?.code || "",
+      selectedCoupon?.discountAmount || 0,
+      Number(finalPrice),
+      orderType
     );
 
     if (orderSuccess) {
@@ -115,7 +140,7 @@ export default function Cart({ marketplace = "electronics" }) {
   return (
     <div className="min-h-screen flex justify-center bg-gray-50">
       <div className="max-w-md w-full flex flex-col">
-        <Breadcrumbs/>
+        <Breadcrumbs />
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-white shadow-sm sticky top-0 z-50">
           <ChevronLeft
             size={20}
@@ -257,7 +282,11 @@ export default function Cart({ marketplace = "electronics" }) {
               <div className="flex justify-between items-center">
                 <h3 className="font-semibold text-lg mb-2">Select Address</h3>
                 <button
-                  onClick={() => setShowAddAddressForm(true)}
+                  onClick={() => {
+                    setShowAddAddressForm(true);
+                    setIsEditingAddress(false);
+                    reset();
+                  }}
                   className="text-blue-600 text-sm font-medium flex items-center gap-1"
                 >
                   <Plus size={16} /> Add Address
@@ -277,14 +306,26 @@ export default function Cart({ marketplace = "electronics" }) {
                           ? "border-blue-500 bg-blue-50"
                           : "border-gray-200"
                       }`}
-                      onClick={() => setSelectedAddress(address)}
                     >
-                      <p className="text-sm font-medium">{address.name}</p>
-                      <p className="text-xs text-gray-500">{address.addressLine1}</p>
-                      {address.landmark && (
-                        <p className="text-xs text-gray-500">Landmark: {address.landmark}</p>
-                      )}
-                      <p className="text-xs text-gray-500">Label: {address.label}</p>
+                      <div className="flex justify-between items-center">
+                        <div
+                          onClick={() => setSelectedAddress(address)}
+                          className="flex-1"
+                        >
+                          <p className="text-sm font-medium">{address.name}</p>
+                          <p className="text-xs text-gray-500">{address.addressLine1}</p>
+                          {address.landmark && (
+                            <p className="text-xs text-gray-500">Landmark:{address.landmark}</p>
+                          )}
+                          <p className="text-xs text-gray-500">{address.label}</p>
+                        </div>
+                        <button
+                          onClick={() => handleEditAddress(address)}
+                          className="text-blue-600"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -313,12 +354,19 @@ export default function Cart({ marketplace = "electronics" }) {
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-2xl p-6 w-[90%] max-w-sm shadow-xl">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Add New Address</h2>
-                    <button onClick={() => setShowAddAddressForm(false)}>
+                    <h2 className="text-xl font-bold">{isEditingAddress ? "Edit Address" : "Add New Address"}</h2>
+                    <button
+                      onClick={() => {
+                        setShowAddAddressForm(false);
+                        setIsEditingAddress(false);
+                        setEditingAddress(null);
+                        reset();
+                      }}
+                    >
                       <X size={24} className="text-gray-600" />
                     </button>
                   </div>
-                  <form onSubmit={handleSubmit(handleAddAddress)} className="space-y-4">
+                  <form onSubmit={handleSubmit(handleAddOrEditAddress)} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Name</label>
                       <input
@@ -362,22 +410,7 @@ export default function Cart({ marketplace = "electronics" }) {
                         className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter landmark (optional)"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Mobile</label>
-                      <input
-                        {...register("mobile", {
-                          required: "Mobile number is required",
-                          pattern: {
-                            value: /^[0-9]{10}$/,
-                            message: "Enter a valid 10-digit mobile number",
-                          },
-                        })}
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter mobile number"
-                      />
-                      {errors.mobile && <p className="text-xs text-red-500">{errors.mobile.message}</p>}
-                    </div>
+                    </div>                    
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Label</label>
                       <input
@@ -391,7 +424,7 @@ export default function Cart({ marketplace = "electronics" }) {
                       type="submit"
                       className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                     >
-                      Save Address
+                      {isEditingAddress ? "Update Address" : "Save Address"}
                     </button>
                   </form>
                 </div>
