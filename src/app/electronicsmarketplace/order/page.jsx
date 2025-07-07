@@ -9,6 +9,8 @@ export default function Order({ marketplace }) {
   const { orders, loading, error, fetchOrders } = useOrder();
   const router = useRouter()
 
+  // console.log("orders detail",orders)
+
   const handleRefresh = async () => {
     await fetchOrders();
   };
@@ -110,7 +112,7 @@ export default function Order({ marketplace }) {
                 <div>
                   <p>
                     <span className="font-medium text-gray-800">Location:</span>{" "}
-                    {order.location},{order.location1},{order.landmark}
+                    {order.location1},{order.landmark}
                   </p>
                   <p>
                     <span className="font-medium text-gray-800">Order Type:</span>{" "}

@@ -54,7 +54,8 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
       orderDate: order.orderDate,
       store: order.store?.name || null,
       location: order.store?.address || "NA",
-      location1:order.customerAddress?.addressLine2,
+      location1:order.customerAddress?.addressLine1,
+      location2:order.customerAddress?.addressLine2,
       landmark:order.customerAddress?.landmark,
       orderType: order.orderType || "Delivery",
       products: order.orderProducts?.map((p) => ({

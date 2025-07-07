@@ -34,16 +34,16 @@ export const BreadcrumbProvider = ({ children, marketplace }) => {
   const [breadcrumbs, setBreadcrumbs] = useState([]);
 
   useEffect(() => {
-    console.log("BreadcrumbProvider - Pathname:", pathname);
-    console.log("BreadcrumbProvider - Marketplace prop:", marketplace);
-    console.log("BreadcrumbProvider - Path Segments:", pathname.split("/").filter(Boolean));
+    // console.log("BreadcrumbProvider - Pathname:", pathname);
+    // console.log("BreadcrumbProvider - Marketplace prop:", marketplace);
+    // console.log("BreadcrumbProvider - Path Segments:", pathname.split("/").filter(Boolean));
     const pathSegments = pathname.split("/").filter(Boolean);
     const detectedMarketplace = pathSegments[0] in marketplaceHomePaths ? pathSegments[0] : marketplace;
-    console.log("BreadcrumbProvider - Detected Marketplace:", detectedMarketplace);
+    // console.log("BreadcrumbProvider - Detected Marketplace:", detectedMarketplace);
     const homeConfig = detectedMarketplace in marketplaceHomePaths 
       ? marketplaceHomePaths[detectedMarketplace]
       : { label: "Home", path: "/" };
-    console.log("BreadcrumbProvider - Home Config:", homeConfig);
+    // console.log("BreadcrumbProvider - Home Config:", homeConfig);
 
     let newBreadcrumbs = [];
 
@@ -104,7 +104,7 @@ export const BreadcrumbProvider = ({ children, marketplace }) => {
       ];
     }
 
-    console.log("BreadcrumbProvider - New Breadcrumbs:", newBreadcrumbs);
+    // console.log("BreadcrumbProvider - New Breadcrumbs:", newBreadcrumbs);
     setBreadcrumbs(newBreadcrumbs);
   }, [pathname, marketplace]);
 
