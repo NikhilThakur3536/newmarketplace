@@ -54,10 +54,15 @@ export default function RestaurantPage() {
   const [storeId, setStoreId] = useState(null);
   const [showChat, setShowChat] = useState(false);
   const [chatId, setChatId] = useState(null);
+  const [isMounted, setIsMounted] = useState(false); // Track client-side mount
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
   // Access breadcrumbs from BreadcrumbContext
   const { breadcrumbs } = useContext(BreadcrumbContext);
+
+  useEffect(() => {
+    setIsMounted(true); // Set to true after component mounts on client
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -164,7 +169,7 @@ export default function RestaurantPage() {
         setChatId(newChatId);
         setShowChat(true);
       } else {
-        console.error("api not trigerred");
+        console.error("api not triggered");
       }
     } catch (error) {
       console.error("Error initiating chat:", error);
@@ -175,7 +180,7 @@ export default function RestaurantPage() {
     <MenuContext.Provider value={{ categoriesData, expandedCategories }}>
       <div className="flex justify-center min-h-screen overflow-x-hidden">
         <div className="max-w-md w-full flex flex-col relative bg-white min-h-screen overflow-x-hidden">
-          <BreadCrumbs/>
+          <BreadCrumbs />
           {/* Header (non-fixed) */}
           <div className="w-full max-w-md px-4 flex gap-4 py-3 bg-lightpink items-center justify-between">
             <div className="flex items-center gap-4">
@@ -194,7 +199,7 @@ export default function RestaurantPage() {
               className="relative flex items items-center"
             >
               <ShoppingCart size={20} strokeWidth={2} className="text-white" />
-              {cartCount > 0 && (
+              {isMounted && cartCount > 0 && ( // Render badge only on client
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                   {cartCount}
                 </span>
@@ -260,7 +265,7 @@ export default function RestaurantPage() {
 
           {/* Search Bar */}
           <div className="fixed bottom-0 w-full max-w-md flex gap-2 bg-white p-2 items-center shadow-[0_-4px_8px_-4px_rgba(0,0,0,0.2)]">
-            <input 
+            <input
               type="text"
               placeholder="Search"
               className="rounded-lg border border-lightpink w-full pl-8 p-2 bg-blue-50"

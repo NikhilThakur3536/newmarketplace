@@ -121,7 +121,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
   };
 
   return (
-    <div className="w-full flex justify-center items-center gap-2 overflow-hidden mt-2 relative">
+    <div className="w-full flex justify-center items-center gap-1 overflow-hidden mt-2 relative">
       <AnimatePresence initial={false} mode="popLayout" custom={direction}>
         {/* Left Card */}
         <motion.div
@@ -175,7 +175,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         {/* Center Card */}
         <motion.div
           key={`${currentIndex}-center`}
-          className="w-[80%] h-56 rounded-lg flex flex-col relative overflow-hidden"
+          className="w-[95%] h-62 rounded-lg flex flex-col relative overflow-hidden"
           variants={cardVariants}
           initial="center"
           animate="center"
@@ -197,7 +197,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
             <span className="text-[0.7rem] font-semibold">
               {categoryProducts[currentIndex]?.productLanguages?.[0]?.name || "N/A"}
             </span>
-            <p className="text-[0.6rem] text-gray-400 line-clamp-2">
+            <p className="text-[0.6rem] text-gray-500 font-medium line-clamp-2">
               {categoryProducts[currentIndex]?.productLanguages?.[0]
                 ?.longDescription || "No description"}
             </p>
