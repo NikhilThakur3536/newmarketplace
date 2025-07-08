@@ -47,22 +47,23 @@ export const ProductProvider = ({ children, marketplace = "electronicsmarketplac
         setError(`Failed to fetch categories for ${marketplace} marketplace`);
       }
     } catch (err) {
-       //setError(`Error fetching categories for ${marketplace} marketplace: ${err.message}`);
+      //setError(`Error fetching categories for ${marketplace} marketplace: ${err.message}`);
     }
   };
 
   const fetchProducts = async (
     categoryIds = selectedCategories,
     search = searchKey,
-    currentPage = page
+    currentPage = page,
+    filters = {} 
   ) => {
-    const offset = (currentPage - 1) * limit;
+    const offset = (currentPage - 1) * (filters.limit || limit); 
     try {
       setLoading(true);
       const body = {
-        limit,
-        offset,
-        languageId: language,
+        limit: filters.limit || limit, 
+        offset: filters.offset || offset, 
+        languageId: filters.languageId || language, 
       };
       if (categoryIds && categoryIds.length > 0) {
         body.categoryIds = categoryIds;
@@ -70,6 +71,15 @@ export const ProductProvider = ({ children, marketplace = "electronicsmarketplac
       if (search && search.trim() !== "") {
         body.searchKey = search.trim();
       }
+      if (filters.manufacturerId) {
+        body.manufacturerId = filters.manufacturerId;
+      }
+      if (filters.productModelId) {
+        body.productModelId = filters.productModelId; 
+      }
+
+      // console.log("fetchProducts payload:", body); 
+
       const endpoint = marketplace === "foodmarketplace" ? "listv1" : "listv2";
       const response = await axios.post(
         `${BASE_URL}/user/product/${endpoint}`,
