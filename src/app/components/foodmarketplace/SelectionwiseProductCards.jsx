@@ -1,3 +1,4 @@
+// SelectionwiseProductCards.jsx
 "use client";
 
 import axios from "axios";
@@ -11,13 +12,13 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [loading, setLoading] = useState(true); // Add loading state
-  const [error, setError] = useState(null); // Add error state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true); // Set loading to true on fetch start
-      setError(null); // Reset error
+      setLoading(true);
+      setError(null);
       try {
         const token = localStorage.getItem("token");
         const payload = {
@@ -43,7 +44,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         console.error("Error fetching products:", error);
         setError("Failed to load products. Please try again.");
       } finally {
-        setLoading(false); // Set loading to false regardless of success or failure
+        setLoading(false);
       }
     };
 
@@ -64,7 +65,6 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
     );
   };
 
-  // Show loading or error state
   if (loading) {
     return <div>Loading products...</div>;
   }
@@ -82,7 +82,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
 
   const cardVariants = {
     left: {
-      x: "-25%",
+      x: "-35%", // Adjusted to prevent overlap
       scale: 0.8,
       opacity: 0.7,
       zIndex: 1,
@@ -93,7 +93,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
     },
     center: {
       x: "0%",
-      scale: 1,
+      scale: 1.1, // Slightly larger scale for emphasis
       opacity: 1,
       zIndex: 2,
       transition: {
@@ -102,7 +102,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
       },
     },
     right: {
-      x: "25%",
+      x: "35%", // Adjusted to prevent overlap
       scale: 0.8,
       opacity: 0.7,
       zIndex: 1,
@@ -121,12 +121,12 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
   };
 
   return (
-    <div className="w-full flex justify-center items-center gap-1 overflow-hidden mt-2 relative">
+    <div className="w-full flex justify-center items-center gap-4 overflow-hidden mt-2 relative"> {/* Increased gap */}
       <AnimatePresence initial={false} mode="popLayout" custom={direction}>
         {/* Left Card */}
         <motion.div
           key={`${prevIndex}-left`}
-          className="w-[50%] h-48 rounded-lg flex flex-col relative"
+          className="w-[40%] h-48 rounded-lg flex flex-col relative" // Reduced width
           variants={cardVariants}
           initial="left"
           animate="left"
@@ -175,7 +175,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         {/* Center Card */}
         <motion.div
           key={`${currentIndex}-center`}
-          className="w-[95%] h-62 rounded-lg flex flex-col relative overflow-hidden"
+          className="w-[450px] h-62 rounded-lg flex flex-col relative overflow-hidden" 
           variants={cardVariants}
           initial="center"
           animate="center"
@@ -218,7 +218,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         {/* Right Card */}
         <motion.div
           key={`${nextIndex}-right`}
-          className="w-[50%] h-48 rounded-lg flex flex-col relative"
+          className="w-[40%] h-48 rounded-lg flex flex-col relative" // Reduced width
           variants={cardVariants}
           initial="right"
           animate="right"

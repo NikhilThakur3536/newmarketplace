@@ -521,15 +521,15 @@ export default function ProductDetailPage() {
       name,
       isFavorite,
     });
-    toast.dismiss("removefav-toast");
-    toast.custom(
-      <div
-        className={`px-4 py-2 rounded-lg shadow-md font-semibold text-white ${isFavorite ? "bg-red-600" : "bg-green-600"}`}
-      >
-        {isFavorite ? `${name} removed from favorites` : `${name} added to favorites`}
-      </div>,
-      { id: "removefav-toast", duration: 500 }
-    );
+    // toast.dismiss("removefav-toast");
+    // toast.custom(
+    //   <div
+    //     className={`px-4 py-2 rounded-lg shadow-md font-semibold text-white ${isFavorite ? "bg-red-600" : "bg-green-600"}`}
+    //   >
+    //     {isFavorite ? `${name} removed from favorites` : `${name} added to favorites`}
+    //   </div>,
+    //   { id: "removefav-toast", duration: 300 }
+    // );
   };
 
   const addToCartHandler = async (product, qty, varientId) => {
