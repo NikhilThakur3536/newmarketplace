@@ -127,13 +127,13 @@ export default function Address() {
       </div>
 
       {/* Confirm Button */}
-      <div className="fixed bottom-2 w-[90%] max-w-md flex justify-center z-50">
+      {/* <div className="fixed bottom-2 w-[90%] max-w-md flex justify-center z-50">
         <div className="w-fit h-fit px-6 flex justify-center">
           <button className="w-fit h-fit px-12 py-2 bg-green rounded-xl text-white font-bold shadow-md">
             Confirm
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
