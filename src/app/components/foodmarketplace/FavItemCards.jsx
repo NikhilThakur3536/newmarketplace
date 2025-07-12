@@ -141,12 +141,12 @@ export default function FavItemCard({ item }) {
         })),
       };
       await addToCart(payload);
-      toast.custom(
-        <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
-          {name} added to cart successfully
-        </div>,
-        { duration: 300 }
-      );
+      // toast.custom(
+      //   <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md font-semibold">
+      //     {name} added to cart successfully
+      //   </div>,
+      //   { duration: 300 }
+      // );
       handleClose();
     } catch (error) {
       console.error("Failed to add item to cart:", error.response?.data || error.message);
