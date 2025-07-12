@@ -107,7 +107,7 @@ export default function SearchPageClient() {
         </div>
 
         {/* Product Results */}
-        <div className="p-4 space-y-4 max-w-md">
+        <div className="p-4 space-y-4 max-w-md mb-12">
           {loading ? (
             <p className="text-center text-gray-500">Loading...</p>
           ) : products.length === 0 ? (
@@ -120,7 +120,7 @@ export default function SearchPageClient() {
         </div>
 
         {/* Bottom Nav */}
-        <div className="w-full max-w-full sticky">
+        <div className="w-full max-w-md fixed bottom-0">
           <FoodNavBar />
         </div>
       </div>
