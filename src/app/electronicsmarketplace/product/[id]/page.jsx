@@ -540,7 +540,7 @@ export default function ProductDetailPage() {
         varientId: varientId,
       };
       await addToCart(payload);
-      toast.success(`${product.name} added to cart with quantity ${qty}`);
+      // toast.success(`${product.name} added to cart with quantity ${qty}`);
     } catch (err) {
       console.error("Error adding to cart:", err);
       toast.error("Failed to add to cart");
