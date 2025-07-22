@@ -14,7 +14,7 @@ import Breadcrumbs from "@/app/components/electronicsmarketplcae/BreadCrumbs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage,productName,productDescription,productSeller}) => {
+  const ChatInterface = ({ onClose, productId, varientId, inventoryId, productImage, productName, productDescription, productSeller }) => {
   const { chatId, messages, isSending, isChatLoading, chatError, sendMessage, fetchMessages, deleteMessage, participantId } = useChat();
   const [newMessage, setNewMessage] = useState('');
   const [proposedPrice, setProposedPrice] = useState('');
@@ -31,7 +31,9 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
     if (chatId) {
       fetchMessages(chatId);
     }
-  }, [chatId, fetchMessages]);
+  }, []);
+
+  console.log("messages",messages)
 
   const handleSendMessage = async () => {
     if ((newMessage.trim() || proposedPrice) && !isSending && chatId && productId) {
@@ -65,6 +67,12 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
   const handlePriceClick = () => {
     setShowOffer(true);
     setShowPropose(true);
+  };
+
+  const handleOrder = (message) => {
+    // Placeholder for order processing logic
+    console.log(`Placing order for product ${message.chatProduct?.product?.productLanguages[0]?.name} at price ${message.priceNegotiation?.offeredPrice}`);
+    // Add your order processing logic here, e.g., dispatching a Redux action
   };
 
   return (
@@ -117,7 +125,7 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
                 alt={productName || "Product"}
                 fill
                 className="object-cover rounded-md"
-              />  
+              />
             </div>
             <div>
               <p className="text-sm font-medium text-white line-clamp-2">{productName || "Unnamed Product"}</p>
@@ -128,7 +136,6 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
 
         {/* Messages Area */}
         <div className="h-[20rem] overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50/50 to-white/50 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-         
           {isChatLoading ? (
             <div className="text-center text-gray-400 text-sm">Loading messages...</div>
           ) : chatError ? (
@@ -153,7 +160,7 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
                   >
                     <p className="text-sm leading-relaxed">{msg.text}</p>
                     {msg.proposedPrice && (
-                      <div className="mt-2 bg-yellow-100/20 rounded-md px-2 py-1 text-xs text-white">
+                      <div className="mt-2 bg-indigo-700 rounded-md px-2 py-1 text-xs text-white">
                         Proposed: ${parseFloat(msg.proposedPrice).toFixed(2)}
                       </div>
                     )}
@@ -178,7 +185,7 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
                     {msg.sender === 'user' && (
                       <motion.button
                         onClick={() => handleDeleteMessage(msg.id)}
-                        className="absolute bottom-2 right-2 text-white hover:text-red-400  transition-opacity"
+                        className="absolute bottom-2 right-2 text-white hover:text-red-400 transition-opacity"
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}
                       >
@@ -192,6 +199,15 @@ const ChatInterface = ({ onClose, productId, varientId, inventoryId,productImage
                           : 'bg-white -left-1 border-l border-b border-gray-100/50'
                       }`}
                     />
+                    {msg.isPriceApproved && (
+                      <button
+                        onClick={() => handleOrder(msg)}
+                        className="z-70 mt-2 w-full py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors"
+                        
+                      >
+                        Place Order
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -395,12 +411,14 @@ export default function ProductDetailPage() {
         const response = await axios.post(url, body, { headers });
         if (response.data.success && Array.isArray(response.data.data?.rows) && response.data.data.rows.length > 0) {
           prod = response.data.data.rows.find((p) => p.id === id);
+          console.log("products",prod)
+          console.log("data",response.data.data.rows)
           if (prod) {
             const productData = {
               id: prod.id,
               name: prod.productLanguages?.[0]?.name || "Unnamed Product",
               price: prod.varients?.[0]?.inventory?.price || 0,
-              image: prod.productImages?.[0]?.url || "/placeholder.jpg",
+              image: prod.productImages?.[0]?.media?.url || "/placeholder.jpg",
               brand: prod.manufacturer?.name || "Unknown",
               storeId: prod.store?.id || null,
               sellerName: prod.store?.name,
@@ -436,6 +454,8 @@ export default function ProductDetailPage() {
     fetchProductById();
   }, [id, cartItems]);
 
+  console.log("product",product)
+
   useEffect(() => {
     if (!product?.categoryId) return;
 
@@ -466,7 +486,7 @@ export default function ProductDetailPage() {
               id: p.id,
               name: p.productLanguages?.[0]?.name || "Unnamed Product",
               price: p.varients?.[0]?.inventory?.price || 0,
-              image: p.productImages?.[0]?.url || "/placeholder.jpg",
+              image: p.productImages?.[0]?.media?.url || "/placeholder.jpg",
               varientId: p.varients?.[0]?.id,
             }))
             .filter((p) => p.id);
@@ -699,7 +719,7 @@ export default function ProductDetailPage() {
                           />
                         </button>
                       </div>
-                      <h3 className="font-medium text-sm mb-1 line-clamp-2">{simProduct.name}</h3>
+                      <h3 className="font-medium text-sm mb-1 line-clamp-1">{simProduct.name}</h3>
                       <p className="text-lg font-bold text-gray-900">{formatPrice(simProduct.price)}</p>
                       <button
                         onClick={() => router.push(`/electronicsmarketplace/product/${simProduct.id}`)}

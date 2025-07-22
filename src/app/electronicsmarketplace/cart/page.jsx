@@ -39,6 +39,8 @@ export default function Cart({ marketplace = "electronics" }) {
     }
   }, [totalPrice]);
 
+  console.log("cart items",cartItems)
+
   const handleDecrease = (item) => {
     const currentQuantity = Math.floor(item.quantity);
     if (currentQuantity > 1) {
@@ -161,7 +163,7 @@ export default function Cart({ marketplace = "electronics" }) {
                 className="bg-white rounded-2xl p-4 shadow-sm flex gap-4"
               >
                 <img
-                  src={item.productImage || "/placeholder.jpg"}
+                  src={item.product?.productImages?.[0]?.media?.url || "/placeholder.jpg"}
                   alt={item.product?.productLanguages?.[0]?.name}
                   className="w-24 h-24 object-cover rounded-lg bg-gray-100"
                 />

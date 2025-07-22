@@ -77,9 +77,8 @@ export const FavoriteProvider = ({ children, marketplace }) => {
 
   useEffect(() => {
     fetchFavorites();
-  }, [marketplace]); // Re-fetch when marketplace changes
+  }, [marketplace]);
 
-  // Helper function to check if a product is in favorites
   const isFavorite = (productId) => {
     return favoriteItems.some((item) => item.id === productId);
   };
@@ -137,7 +136,6 @@ export const FavoriteProvider = ({ children, marketplace }) => {
         );
       }
 
-      // Refresh the favorites list after toggling
       fetchFavorites();
     } catch (error) {
       console.error("Error toggling favorite:", error);

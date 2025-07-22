@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, Smile, Send, Trash2 } from "lucide-react";
+import { ChevronLeft, Smile, Send, Trash2, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useChat } from "@/app/context/ChatContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +32,10 @@ export default function Chats() {
   const [isTyping, setIsTyping] = useState(false);
   const [showOffer, setShowOffer] = useState(false);
   const [showPropose, setShowPropose] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false); 
+  const [quantity, setQuantity] = useState(1);
+  const [address, setAddress] = useState(""); 
+  const [coupon, setCoupon] = useState(""); 
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -39,7 +43,6 @@ export default function Chats() {
       const fetchedChats = await fetchChats();
       console.log("Fetched chats:", fetchedChats);
 
-      // Fetch the last message for each chat
       const enhancedChats = await Promise.all(
         fetchedChats.map(async (chat) => {
           let lastMessage = "No messages yet";
@@ -78,10 +81,10 @@ export default function Chats() {
             productDescription: chat.product?.productLanguages?.[0]?.shortDescription || "No description",
             productImage: "/placeholder.jpg",
             productSeller: chat.productSeller || "unknown seller",
-            productName:chat.productName,
+            productName: chat.productName,
             varientId: chat.varientId || null,
             inventoryId: chat.inventoryId || null,
-            lastMessage, // Add the last message to the chat object
+            lastMessage,
           };
         })
       );
@@ -90,7 +93,7 @@ export default function Chats() {
       setChats(enhancedChats);
     };
     loadChats();
-  }, [fetchChats]);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -99,7 +102,6 @@ export default function Chats() {
   useEffect(() => {
     if (chatId && selectedChat) {
       fetchMessages(chatId);
-      // Update the last message in the chats state when messages are updated
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.id === chatId && messages.length > 0
@@ -108,7 +110,7 @@ export default function Chats() {
         )
       );
     }
-  }, [chatId, fetchMessages, selectedChat,]);
+  }, [selectedChat]);
 
   const handleChatClick = async (chat) => {
     try {
@@ -135,6 +137,7 @@ export default function Chats() {
     setShowOffer(false);
     setShowPropose(false);
     setIsTyping(false);
+    setShowOrderModal(false); // Close order modal when closing chat
   };
 
   const handleSendMessage = async () => {
@@ -163,7 +166,6 @@ export default function Chats() {
   const handleDeleteMessage = (messageId) => {
     if (messageId) {
       deleteMessage(messageId);
-      // Update the last message after deletion
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.id === chatId && messages.length > 1
@@ -179,10 +181,26 @@ export default function Chats() {
     setShowPropose(true);
   };
 
+  const handlePlaceOrder = () => {
+    setShowOrderModal(true); // Open the order modal
+  };
+
+  const handleCheckout = () => {
+    // Placeholder for checkout logic
+    console.log("Order placed:", { quantity, address, coupon });
+    // You can integrate with an API or OrderContext here
+    setShowOrderModal(false);
+    setQuantity(1);
+    setAddress("");
+    setCoupon("");
+    // Optionally, redirect to orders page or show a success message
+    router.push("/electronicsmarketplace/orders");
+  };
+
   return (
     <div className="min-h-screen flex justify-center bg-gray-50">
       <div className="flex flex-col gap-4 max-w-md w-full">
-        <Breadcrumbs/>
+        <Breadcrumbs />
         {/* Header */}
         <div className="w-full px-4 flex gap-4 py-3 items-center bg-white shadow-md sticky top-0 z-50">
           <ChevronLeft
@@ -208,13 +226,11 @@ export default function Chats() {
               onClick={() => handleChatClick(chat)}
             >
               <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold relative">
-                <Image src={"/placeholder.jpg"} alt="img" fill  className="object-cover rounded-full"/>
+                <Image src="/placeholder.jpg" alt="img" fill className="object-cover rounded-full" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-800 truncate">
-                    {chat.productName}
-                  </span>
+                  <span className="font-semibold text-gray-800 truncate">{chat.productName}</span>
                   <span className="text-xs text-gray-400">
                     {new Date().toLocaleTimeString([], {
                       hour: "2-digit",
@@ -222,15 +238,8 @@ export default function Chats() {
                     })}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 truncate">
-                  {chat.lastMessage}
-                </p>
+                <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
               </div>
-              {/* {chat.unreadCount > 0 && (
-                <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-pink-500 rounded-full">
-                  {chat.unreadCount}
-                </span>
-              )} */}
             </div>
           ))}
         </div>
@@ -238,7 +247,7 @@ export default function Chats() {
         {/* Chat Interface */}
         {selectedChat && (
           <motion.div
-            className="fixed inset-0 bg:black/40 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -282,7 +291,7 @@ export default function Chats() {
                 <div className="bg-green-600 border border-gray-100/50 rounded-lg p-3 flex items-center gap-3">
                   <div className="relative w-20 h-12">
                     <Image
-                      src={"/placeholder.jpg"}
+                      src="/placeholder.jpg"
                       alt={productName || "Product"}
                       fill
                       className="object-cover rounded-md"
@@ -323,7 +332,7 @@ export default function Chats() {
                         >
                           <p className="text-sm leading-relaxed">{msg.text}</p>
                           {msg.proposedPrice && (
-                            <div className="mt-2 bg-yellow-100/20 rounded-md px-2 py-1 text-xs text-white">
+                            <div className="mt-2 bg-indigo-700 rounded-md px-2 py-1 text-xs text-white">
                               Proposed: ${parseFloat(msg.proposedPrice).toFixed(2)}
                             </div>
                           )}
@@ -450,6 +459,20 @@ export default function Chats() {
                         <Send className="w-5 h-5" />
                       )}
                     </motion.button>
+                    {/* Place Order Button */}
+                    <motion.button
+                      onClick={handlePlaceOrder}
+                      disabled={!chatId || !selectedChat?.productId}
+                      className={`p-2 rounded-lg flex items-center justify-center transition-all ${
+                        !chatId || !selectedChat?.productId
+                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          : "bg-green-500 text-white hover:bg-green-600"
+                      }`}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                    </motion.button>
                   </div>
 
                   {showPropose && (
@@ -486,6 +509,7 @@ export default function Chats() {
                   )}
                 </div>
 
+                {/* Offer Modal */}
                 {showOffer && (
                   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-60">
                     <div className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100/50 p-4">
@@ -538,6 +562,80 @@ export default function Chats() {
                       </div>
                     </div>
                   </div>
+                )}
+
+                {/* Order Modal */}
+                {showOrderModal && (
+                  <motion.div
+                    className="fixed inset-0 bg-black/40 flex items-end justify-center z-90"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <motion.div
+                      className="w-full max-w-md bg-white/90 backdrop-blur-md rounded-t-2xl shadow-xl border border-gray-100/50 p-6"
+                      initial={{ y: "100%" }}
+                      animate={{ y: 0 }}
+                      exit={{ y: "100%" }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium text-gray-800">Place Order</h3>
+                        <button
+                          onClick={() => setShowOrderModal(false)}
+                          className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+                        >
+                          Close
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Quantity</label>
+                          <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                            min="1"
+                            className="w-full bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all"
+                            placeholder="Enter quantity"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Address</label>
+                          <textarea
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Enter delivery address"
+                            className="w-full bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all resize-none h-24"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Coupon Code (Optional)</label>
+                          <input
+                            type="text"
+                            value={coupon}
+                            onChange={(e) => setCoupon(e.target.value)}
+                            placeholder="Enter coupon code"
+                            className="w-full bg-gray-50/50 border border-gray-100/50 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-200 transition-all"
+                          />
+                        </div>
+                        <motion.button
+                          onClick={handleCheckout}
+                          disabled={!quantity || !address.trim()}
+                          className={`w-full py-2 rounded-lg flex items-center justify-center transition-all ${
+                            !quantity || !address.trim()
+                              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                              : "bg-indigo-500 text-white hover:bg-indigo-600"
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Proceed to Checkout
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
                 )}
               </div>
             </motion.div>

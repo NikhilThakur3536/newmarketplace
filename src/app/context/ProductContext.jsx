@@ -78,7 +78,6 @@ export const ProductProvider = ({ children, marketplace = "electronicsmarketplac
         body.productModelId = filters.productModelId; 
       }
 
-      // console.log("fetchProducts payload:", body); 
 
       const endpoint = marketplace === "foodmarketplace" ? "listv1" : "listv2";
       const response = await axios.post(
@@ -87,13 +86,14 @@ export const ProductProvider = ({ children, marketplace = "electronicsmarketplac
         { headers: getAuthHeaders() }
       );
       const data = response.data;
+      console.log("data",data)
       if (data.success) {
         setProducts(
           (data.data.rows || []).map((product) => ({
             id: product.id,
             name: product.productLanguages?.[0]?.name || "Unnamed Product",
             price: product.varients?.[0]?.inventory?.price || product.variants?.[0]?.inventory?.price || 0,
-            image: product.productImages?.[0]?.url || "/placeholder.svg",
+            image: product.productImages?.[0]?.media?.url || "/placeholder.svg",
             categoryId: product.categoryId,
             productVarientUomId: product.varients?.[0]?.id || product.variants?.[0]?.id,
             productLanguages: product.productLanguages || [],
@@ -171,7 +171,7 @@ export const ProductProvider = ({ children, marketplace = "electronicsmarketplac
     fetchCategories();
     fetchProducts();
     fetchPopularProducts();
-  }, [language, marketplace]);
+  }, [language]);
 
   useEffect(() => {
     fetchProducts(selectedCategories, searchKey, page);

@@ -1,12 +1,19 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Heart, User, ShoppingCart, ClipboardList, MessageCircleMore } from "lucide-react";
+import { Home, Heart, ShoppingCart, ClipboardList, MessageCircleMore } from "lucide-react";
 import { useCart } from "@/app/context/CartContext";
+import { useState, useEffect } from "react";
+
 export default function BottomNavigation() {
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount } = useCart();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const navItems = [
     { icon: Home, label: "Home", path: "/electronicsmarketplace" },
@@ -33,8 +40,7 @@ export default function BottomNavigation() {
             >
               <Icon className={`w-6 h-6 mb-1 ${isActive ? "fill-blue-500" : ""}`} />
 
-              {/* Show cart count if label is Cart and count > 0 */}
-              {isCart && cartCount > 0 && (
+              {isClient && isCart && typeof cartCount === "number" && cartCount > 0 && (
                 <span className="absolute -top-1.5 right-1 bg-red-500 text-white text-xs font-semibold rounded-full px-1.5">
                   {cartCount}
                 </span>

@@ -27,16 +27,18 @@ export default function HomePage() {
     setLanguage
   } = useProduct();
 
+
+
   const { favoriteItems, toggleFavorite } = useFavorite();
-  const { languages, loading: languageLoading, error: languageError } = useLanguage(); // Access language context
+  const { languages, loading: languageLoading, error: languageError } = useLanguage();
   const router = useRouter();
-  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false); // State for dropdown
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false); 
 
   
   const handleLanguageSelect = (language) => {
     localStorage.setItem("selectedLanguage", language.id);
-    setLanguage(language.id); // Update language state in ProductContext
-    setIsLanguageDropdownOpen(false); // Close dropdown
+    setLanguage(language.id);
+    setIsLanguageDropdownOpen(false);
   };
 
   const handleSearch = (e) => {
@@ -195,7 +197,7 @@ export default function HomePage() {
                         />
                       </button>
                     </div>
-                    <h3 className="font-medium text-sm mb-1 line-clamp-2">
+                    <h3 className="font-medium text-sm mb-1 line-clamp-1">
                       {product.name}
                     </h3>
                     <p className="text-lg font-bold text-gray-900">

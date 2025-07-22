@@ -107,6 +107,8 @@ export function ChatProvider({ children }) {
           }
         );
 
+        console.log("messages",response)
+
         if (response.data.success) {
           const messagesData = Array.isArray(response.data.data?.messages)
             ? response.data.data.messages
@@ -128,6 +130,7 @@ export function ChatProvider({ children }) {
                   : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                 attachments: msg.attachments || [],
                 proposedPrice: msg.proposedPrice || null,
+                isPriceApproved:msg.priceNegotiation?.isPriceApproved
               }))
             );
           }
