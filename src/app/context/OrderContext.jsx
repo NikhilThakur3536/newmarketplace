@@ -50,6 +50,7 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
       orderNumber: order.orderNumber,
       tokenNumber: order.tokenNumber,
       totalAmount: order.totalAmount,
+      subTotal:order.subTotal,
       paymentStatus: order.paymentStatus,
       orderDate: order.orderDate,
       store: order.store?.name || null,

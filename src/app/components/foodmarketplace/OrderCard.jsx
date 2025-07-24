@@ -44,7 +44,7 @@ export default function OrderCard() {
           dateStyle: "medium",
           timeStyle: "short",
         });
-        const amount = order.totalAmount;
+        const amount = order.subTotal.toFixed(2);
 
         return (
           <div
