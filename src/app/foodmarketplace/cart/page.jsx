@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useMemo, useCallback, useContext } from "react";
 import { debounce } from "lodash";
 import { motion, AnimatePresence } from "framer-motion";
-import BreadcrumbContext from "@/app/context/BreadCrumbContext"; // Import BreadcrumbContext
+import BreadcrumbContext from "@/app/context/BreadCrumbContext";
 import Link from "next/link"; // Import Link for navigation
 import Breadcrumbs from "@/app/components/foodmarketplace/BreadCrumbs";
 
@@ -20,7 +20,7 @@ export default function Cart() {
   const { addresses, loading: addressesLoading } = useCustomerAddresses();
   const { coupons, loading: couponsLoading, error: couponError, fetchCoupons } = useCoupons();
   const router = useRouter();
-  const { breadcrumbs } = useContext(BreadcrumbContext); // Access breadcrumbs from context
+  const { breadcrumbs } = useContext(BreadcrumbContext); 
   const [localCartItems, setLocalCartItems] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,6 +104,8 @@ export default function Cart() {
       debouncedFetchCoupons(subTotal);
     }
   }, [selectedCoupon, subTotal, cartLoading]);
+
+  console.log("cartitems",localCartItems)
 
   // Handle quantity change
   const handleQuantityChange = async (itemIndex, delta) => {
@@ -257,7 +259,7 @@ export default function Cart() {
                   </div>
                   <div className="w-[50%] relative overflow-hidden rounded-lg">
                     <Image
-                      src={item.product?.image || "/placeholder.jpg"}
+                      src={item.product?.productImages?.[0]?.media?.url || "/placeholder.jpg"}
                       alt="food item"
                       fill
                       className="object-cover rounded-lg"

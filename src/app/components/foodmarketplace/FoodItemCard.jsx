@@ -16,7 +16,9 @@ export default function FoodItemCard({ item }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedAddons, setSelectedAddons] = useState([]);
   const { addToCart, cartItems, updateCartQuantity } = useCart();
+   
 
+  console.log("item",item)
   // Check if the item is in the cart
   const cartItem = cartItems.find(
     (cart) =>
@@ -96,7 +98,7 @@ export default function FoodItemCard({ item }) {
   const name = item?.productLanguages?.[0]?.name || "Item";
   const price = Number(item?.varients?.[0]?.productVarientUoms?.[0]?.inventory?.price || 0);
   const description = item?.productLanguages?.[0]?.longDescription || "";
-  const imageUrl = item?.media?.[0]?.url || "/placeholder.jpg";
+  const imageUrl = item?.productImages?.[0]?.media?.url || "/placeholder.jpg";
 
   const totalAddonPrice = selectedAddons.reduce((sum, addon) => sum + Number(addon.price || 0), 0);
   const totalPrice = (price + totalAddonPrice) * quantity;
