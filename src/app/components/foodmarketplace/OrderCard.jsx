@@ -15,7 +15,7 @@ function slugify(text) {
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "") 
       .replace(/\s+/g, "-")
-  ).replace(/%20/g, "-"); // Replace encoded spaces with hyphens
+  ).replace(/%20/g, "-"); 
 }
 
 export default function OrderCard() {
@@ -55,7 +55,7 @@ export default function OrderCard() {
             <div className="flex gap-2 w-full">
               <div className="w-[20%] h-[60px] relative rounded-lg">
                 <Image
-                  src="/placeholder.jpg"
+                  src={order.image|| "/placeholder.jpg"}
                   alt="Product"
                   fill
                   className="object-center rounded-sm"

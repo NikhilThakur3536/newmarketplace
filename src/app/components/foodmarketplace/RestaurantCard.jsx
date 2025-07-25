@@ -25,7 +25,16 @@ export default function RestaurantCard({ name, rating, image, timings, locationN
     // Navigate to the page
     router.push(path);
   };
-
+  let placeholder="/DragonPlaceRestaurant.png"
+  if (name==="Dragon Palace Main Branch"){
+     placeholder="/DragonPlaceRestaurant.png"
+  } else if(name==="Spiec India Main Branch"){
+      placeholder = "/SpiceIndiaRestaurant.jpg"
+  }else if(name==="Bella Italia Main Branch"){
+      placeholder= "/BellaItaliaRestuarant.jpg"
+  } else{
+      placeholder = "/MCDonald'sRestaurant.jpg"
+  }
   return (
     <div
       className="w-full h-64 flex flex-col bg-white rounded-xl border border-gray-200 cursor-pointer"
@@ -33,7 +42,7 @@ export default function RestaurantCard({ name, rating, image, timings, locationN
     >
       <div className="relative w-full h-[90%] overflow-hidden rounded-t-xl">
         <Image
-          src={image || "/placeholder.jpg"}
+          src={placeholder}
           alt={name || "restaurant"}
           fill
           className="object-cover"
