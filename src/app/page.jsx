@@ -81,13 +81,13 @@ export default function MarketplaceSelection() {
         >
           {isLoading ? 'Loading...' : 'Electronics Marketplace'}
         </button>
-        <button
+        {/* <button
           onClick={() => handleNavigation('autopartsmarketplace',AUTO_DOMAIN_ID,AUTO_DEVICE_ID,AUTO_DEVICE_TOKEN)}
           className="p-2 bg-yellow-100"
           disabled={isLoading}
         >
           {isLoading ? 'Loading...' : 'Auto Marketplace'}
-        </button>
+        </button> */}
       </div>
     </div>
   );
