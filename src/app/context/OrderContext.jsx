@@ -59,6 +59,7 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
       location2:order.customerAddress?.addressLine2,
       landmark:order.customerAddress?.landmark,
       orderType: order.orderType || "Delivery",
+      image:order.orderProducts?.[0]?.productImages?.[0]?.media?.url,
       products: order.orderProducts?.map((p) => ({
         name:
           p.orderProductDetails?.[0]?.name ||
@@ -91,6 +92,7 @@ export const OrderProvider = ({ children, marketplace = "electronics" }) => {
       // console.log(`Orders response for ${marketplace}:`, response.data);
       
       if (response.data.success) {
+        // console.log("response",response.data.data)
         const formatted = normalizeOrders(response.data.data);
         // console.log("formatted", formatted);
         setOrders(formatted);

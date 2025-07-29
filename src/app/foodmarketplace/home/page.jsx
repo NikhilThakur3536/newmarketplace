@@ -35,7 +35,7 @@ class ErrorBoundary extends Component {
 // Wrapper component to track loading state
 const LoadTracker = ({ children, onLoad, name }) => {
   useEffect(() => {
-    console.log(`${name} LoadTracker mounted, calling onLoad`);
+    // console.log(`${name} LoadTracker mounted, calling onLoad`);
     onLoad();
   }, [onLoad, name]);
   return <>{children}</>;
@@ -83,7 +83,7 @@ export default function Home() {
   };
 
  const handleComponentLoad = (component) => {
-  console.log(`${component} loaded, updating componentLoading`);
+  // console.log(`${component} loaded, updating componentLoading`);
   setComponentLoading((prev) => {
     if (prev[component]) {
       const newState = { ...prev, [component]: false };
@@ -95,8 +95,8 @@ export default function Home() {
 };
 
   useEffect(() => {
-    console.log("componentLoading:", componentLoading);
-    console.log("categoryLoading:", categoryLoading, "languageLoading:", languageLoading);
+    // console.log("componentLoading:", componentLoading);
+    // console.log("categoryLoading:", categoryLoading, "languageLoading:", languageLoading);
   }, [componentLoading, categoryLoading, languageLoading]);
 
   const isLoading =
@@ -105,7 +105,7 @@ export default function Home() {
     componentLoading.couponList ||
     componentLoading.selectionCards ||
     componentLoading.popularCards;
-  console.log("isLoading:", isLoading);
+  // console.log("isLoading:", isLoading);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

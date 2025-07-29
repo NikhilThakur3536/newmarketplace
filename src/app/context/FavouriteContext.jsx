@@ -25,7 +25,7 @@ export const FavoriteProvider = ({ children, marketplace }) => {
     const token = localStorage.getItem("token");
     const lang = localStorage.getItem("selectedLanguage");
     if (!token) {
-      console.log("No token, redirecting to login");
+      // console.log("No token, redirecting to login");
       setShowPopup({
         type: "error",
         message: "Please log in to view your favorites.",
@@ -51,13 +51,13 @@ export const FavoriteProvider = ({ children, marketplace }) => {
         }
       );
 
-      console.log("fav item response", response);
+      // console.log("fav item response", response);
 
       const items = response.data?.data?.rows?.map((item) => ({
         id: item.id || item.productId || "unknown-id",
         productLanguages: item.productLanguages || [{ name: "Unknown Product", longDescription: "No description" }],
         varients: item.varients,
-        media: item.media || [{ url: "/placeholder.jpg" }],
+        media: item.productImages?.[0]?.media?.url || [{ url: "/placeholder.jpg" }],
         addons: item.addons || [],
         productVarientUomId: item.varients?.[0]?.productVarientUom?.id,
       })) || [];

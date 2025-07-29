@@ -105,18 +105,6 @@ export default function FoodItemCard({ item }) {
 
   const handleAddToCart = async () => {
     const productVarientUomId = item?.varients?.[0]?.productVarientUoms?.[0]?.id;
-    // console.log("Payload being sent:", {
-    //   productId: item?.id,
-    //   productVarientUomId,
-    //   quantity,
-    //   addons: selectedAddons.map((addon) => ({
-    //     addOnId: addon.id,
-    //     addOnProductId: addon.productId,
-    //     addOnVarientId: addon.varientId,
-    //     productVarientUomId: addon.uomId,
-    //     quantity: 1,
-    //   })),
-    // });
 
     if (!productVarientUomId) {
       console.error("Invalid productVarientUomId:", item);

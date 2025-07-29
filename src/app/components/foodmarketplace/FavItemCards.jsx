@@ -25,6 +25,8 @@ export default function FavItemCard({ item }) {
   );
   const isInCart = !!cartItem;
 
+  console.log("items",item)
+
   // Set initial quantity based on cart
   useEffect(() => {
     if (cartItem) {
@@ -96,7 +98,9 @@ export default function FavItemCard({ item }) {
   const name = item?.productLanguages?.[0]?.name || "Item";
   const price = Number(item?.varients?.[0]?.productVarientUoms?.[0]?.inventory?.price || 0);
   const description = item?.productLanguages?.[0]?.longDescription || "";
-  const imageUrl = item?.media?.[0]?.url || "/placeholder.jpg";
+  const imageUrl = item?.media || "/placeholder.jpg";
+
+  console.log("price",price)
 
   const totalAddonPrice = selectedAddons.reduce((sum, addon) => sum + Number(addon.price || 0), 0);
   const totalPrice = (price + totalAddonPrice) * quantity;

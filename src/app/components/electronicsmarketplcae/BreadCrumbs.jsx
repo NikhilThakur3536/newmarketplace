@@ -12,7 +12,7 @@ const breadcrumbItemVariants = {
 export default function Breadcrumbs() {
   const { breadcrumbs } = useContext(BreadcrumbContext);
 
-  console.log("Breadcrumbs Component - Breadcrumbs:", breadcrumbs); // Debug log
+  // console.log("Breadcrumbs Component - Breadcrumbs:", breadcrumbs); // Debug log
 
   return (
     <AnimatePresence>

@@ -372,7 +372,7 @@ export default function FilterModal() {
       payload.productModelId = selectedProductModelId; // Single ID
     }
 
-    console.log("Applying filters with payload:", payload); // Debug log
+    // console.log("Applying filters with payload:", payload); // Debug log
 
     fetchProducts(selectedCategories, combinedSearchKey, 1, payload);
     setShowFilterModal(false);
