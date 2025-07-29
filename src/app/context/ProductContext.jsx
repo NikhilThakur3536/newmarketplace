@@ -86,7 +86,7 @@ export const ProductProvider = ({ children, marketplace = "electronicsmarketplac
         { headers: getAuthHeaders() }
       );
       const data = response.data;
-      console.log("data",data)
+      // console.log("data",data)
       if (data.success) {
         setProducts(
           (data.data.rows || []).map((product) => ({

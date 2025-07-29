@@ -39,7 +39,7 @@ export default function SelectionwiseProductCards({ selectedCategoryId }) {
         );
 
         setCategoryProducts(response.data?.data?.rows || []);
-        console.log("Products fetched:", response.data?.data?.rows);
+        // console.log("Products fetched:", response.data?.data?.rows);
       } catch (error) {
         console.error("Error fetching products:", error);
         setError("Failed to load products. Please try again.");

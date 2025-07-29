@@ -23,7 +23,7 @@ export default function OrderCard() {
   const router = useRouter();
 
   if (!orders || orders.length === 0) return <p>No orders found.</p>;
-  console.log("orders data",orders)
+  // console.log("orders data",orders)
 
   return (
     <>

@@ -37,7 +37,7 @@ const CouponProviderComponent = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching coupons with totalAmount:", Number(totalAmount).toFixed(2));
+      // console.log("Fetching coupons with totalAmount:", Number(totalAmount).toFixed(2));
       const response = await axios.post(
         `${BASE_URL}/user/coupon/list`,
         {
@@ -52,7 +52,7 @@ const CouponProviderComponent = ({ children }) => {
           },
         }
       );
-      console.log("Coupon API response:", response.data);
+      // console.log("Coupon API response:", response.data);
       const couponList = response.data.data?.rows || [];
       const filteredCoupons = couponList
         .filter((coupon) => coupon.isEligible && totalAmount >= (coupon.minPurchaseAmount || 0))
@@ -79,7 +79,7 @@ const CouponProviderComponent = ({ children }) => {
     setError(null);
   };
 
-  console.log("CouponProvider rendered, coupons.length:", coupons.length);
+  // console.log("CouponProvider rendered, coupons.length:", coupons.length);
 
   return (
     <CouponContext.Provider value={{ coupons, loading, error, fetchCoupons, clearCoupons }}>

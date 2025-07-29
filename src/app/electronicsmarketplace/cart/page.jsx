@@ -39,7 +39,7 @@ export default function Cart({ marketplace = "electronics" }) {
     }
   }, [totalPrice]);
 
-  console.log("cart items",cartItems)
+  // console.log("cart items",cartItems)
 
   const handleDecrease = (item) => {
     const currentQuantity = Math.floor(item.quantity);

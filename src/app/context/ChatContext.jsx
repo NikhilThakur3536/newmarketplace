@@ -23,7 +23,7 @@ export function ChatProvider({ children }) {
   const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
 
   const checkExistingChat = useCallback(async (participantId, productId = null) => {
-    console.log("Checking existing chat for participantId:", participantId, "productId:", productId, "at:", new Date().toISOString());
+    // console.log("Checking existing chat for participantId:", participantId, "productId:", productId, "at:", new Date().toISOString());
 
     try {
       const token = getToken();
@@ -107,7 +107,7 @@ export function ChatProvider({ children }) {
           }
         );
 
-        console.log("messages",response)
+        // console.log("messages",response)
 
         if (response.data.success) {
           const messagesData = Array.isArray(response.data.data?.messages)
@@ -181,7 +181,7 @@ export function ChatProvider({ children }) {
 
         // If an existing chat is found, open it
         if (existingChatId) {
-          console.log("Opening existing chat with ID:", existingChatId);
+          // console.log("Opening existing chat with ID:", existingChatId);
           setChatId(existingChatId);
           setParticipantId(participantId);
           setChatProductId(existingChatProductId);
@@ -204,7 +204,7 @@ export function ChatProvider({ children }) {
         if (varientId) payload.varientId = varientId;
         if (inventoryId) payload.inventoryId = inventoryId;
 
-        console.log("Initiated chat payload:", payload);
+        // console.log("Initiated chat payload:", payload);
 
         const response = await axios.post(
           `${BASE_URL}/user/chat/create`,
@@ -232,7 +232,7 @@ export function ChatProvider({ children }) {
       } catch (err) {
         if (err.response?.data?.error === "Chat already exists") {
           const existingChatId = err.response.data.existingChatId;
-          console.log("Chat already exists, opening chat with ID:", existingChatId);
+          // console.log("Chat already exists, opening chat with ID:", existingChatId);
           setChatId(existingChatId);
           setParticipantId(participantId);
           const token = getToken();
@@ -356,7 +356,7 @@ export function ChatProvider({ children }) {
   );
 
   const fetchChats = useCallback(async () => {
-    console.log("Fetching chats at:", new Date().toISOString());
+    // console.log("Fetching chats at:", new Date().toISOString());
     setIsChatLoading(true);
     setChatError(null);
 
@@ -389,7 +389,7 @@ export function ChatProvider({ children }) {
         },
       });
 
-      console.log("API response fetch chats:", response);
+      // console.log("API response fetch chats:", response);
 
       if (response.data.success && Array.isArray(response.data.data)) {
         setChatListCache(response.data.data);

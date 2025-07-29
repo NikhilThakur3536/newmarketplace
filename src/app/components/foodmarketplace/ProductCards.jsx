@@ -10,7 +10,7 @@ export default function PopularProductCards() {
 
   // Log initial data for debugging
   useEffect(() => {
-    console.log("PopularProductCards mounted, products:", popularProducts);
+    // console.log("PopularProductCards mounted, products:", popularProducts);
     // Optionally trigger fetch if not already done by context
     if (!popularProducts.length && !loading) {
       fetchPopularProducts();

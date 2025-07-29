@@ -31,7 +31,7 @@ export default function Cart() {
   const [lastFetchedSubTotal, setLastFetchedSubTotal] = useState(null);
 
 
-  console.log("bread",breadcrumbs)
+  // console.log("bread",breadcrumbs)
 
   // Debounced fetchCoupons
   const debouncedFetchCoupons = useCallback(
@@ -105,7 +105,7 @@ export default function Cart() {
     }
   }, [selectedCoupon, subTotal, cartLoading]);
 
-  console.log("cartitems",localCartItems)
+  // console.log("cartitems",localCartItems)
 
   // Handle quantity change
   const handleQuantityChange = async (itemIndex, delta) => {

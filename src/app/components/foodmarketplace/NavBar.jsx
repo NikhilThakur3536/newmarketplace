@@ -12,14 +12,14 @@ export default function FoodNavBar() {
   const { cartCount, fetchCartItems, isLoading } = useCart();
 
   useEffect(() => {
-    console.log("FoodNavBar mounted, fetching cart items");
+    // console.log("FoodNavBar mounted, fetching cart items");
     fetchCartItems(); // Fetch on mount to ensure latest cartCount
   }, [fetchCartItems]);
 
   useEffect(() => {
     const handleCartUpdate = (e) => {
       if (e.detail?.marketplace === "foodmarketplace") {
-        console.log("cart-updated event received, cartCount:", cartCount);
+        // console.log("cart-updated event received, cartCount:", cartCount);
         fetchCartItems();
       }
     };
@@ -28,7 +28,7 @@ export default function FoodNavBar() {
   }, [fetchCartItems]); // Removed cartCount from dependencies
 
   useEffect(() => {
-    console.log("cartCount updated:", cartCount); // Debug cartCount changes
+    // console.log("cartCount updated:", cartCount); // Debug cartCount changes
   }, [cartCount]);
 
   const icons = useMemo(
