@@ -230,14 +230,14 @@ export default function RestaurantPage() {
           </div>
 
           {/* Filters */}
-          <hr className="border-0 bg-gray-300 h-2 w-full" />
+          {/* <hr className="border-0 bg-gray-300 h-2 w-full" />
           <div className="w-full h-fit flex items-center p-2">
             <div className="w-fit h-fit px-2 py-1 flex items-center justify-center gap-1 border border-gray-200 rounded-lg">
               <SlidersHorizontal size={15} color="black" />
               <p className="text-black text-sm font-medium">Filters</p>
               <ChevronDown size={15} color="black" />
             </div>
-          </div>
+          </div> */}
           <hr className="border-0 bg-gray-200 h-0.5 w-full" />
 
           {/* Menu */}
