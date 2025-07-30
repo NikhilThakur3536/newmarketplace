@@ -18,17 +18,15 @@ export default function RestaurantCard({ name, rating, image, timings, locationN
   const path = `/foodmarketplace/${restaurantSlug}/${locationSlug}`;
 
   const handleClick = () => {
-    // Store last visited restaurant path
     if (typeof window !== "undefined") {
       localStorage.setItem("lastRestaurantUrl", path);
     }
-    // Navigate to the page
     router.push(path);
   };
   let placeholder="/DragonPlaceRestaurant.png"
   if (name==="Dragon Palace Main Branch"){
      placeholder="/DragonPlaceRestaurant.png"
-  } else if(name==="Spiec India Main Branch"){
+  } else if(name==="Spice India Main Branch"){
       placeholder = "/SpiceIndiaRestaurant.jpg"
   }else if(name==="Bella Italia Main Branch"){
       placeholder= "/BellaItaliaRestuarant.jpg"
